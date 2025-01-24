@@ -24,13 +24,17 @@ export async function loadEnvConfig(): Promise<Partial<StoryblokConfig>> {
 
 export async function saveConfig(config: StoryblokConfig): Promise<void> {
   await writeFile(
-    path.join(process.cwd(), ".storyblok.config.json"),
+    path.join(process.cwd(), ".storyblokrc.json"),
     JSON.stringify(config, null, 2)
   );
 }
 
-// loadConfig combines all the above functions to load the Storyblok configuration
 export async function loadConfig(): Promise<StoryblokConfig | null> {
-  const result = await explorer.search();
-  return result?.config || null;
+  try {
+    const result = await explorer.search();
+    return result?.config || null;
+  } catch (error) {
+    console.error("Error loading config:", error);
+    return null;
+  }
 }

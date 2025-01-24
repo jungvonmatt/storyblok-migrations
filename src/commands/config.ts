@@ -1,18 +1,19 @@
 import { confirm, input } from "@inquirer/prompts";
 import pc from "picocolors";
 import { StoryblokConfig } from "../types/config";
-import { loadEnvConfig, saveConfig } from "../utils/config";
+import { loadEnvConfig, saveConfig, loadConfig } from "../utils/config";
 
 export async function configureStoryblok() {
   try {
+    const existingConfig = await loadConfig();
     const envConfig = await loadEnvConfig();
 
-    // Check if configuration exists in .env
-    if (envConfig.spaceId || envConfig.oauthToken) {
-      // Found existing configuration in .env
-      const useExisting = await verifyExistingConfig(envConfig);
+    // Check if configuration exists in config file or .env
+    if (existingConfig || envConfig.spaceId || envConfig.oauthToken) {
+      const configToVerify = existingConfig || envConfig;
+      const useExisting = await verifyExistingConfig(configToVerify);
       if (useExisting) {
-        await saveConfig(envConfig as StoryblokConfig);
+        await saveConfig(configToVerify as StoryblokConfig);
         console.log(pc.green("✓ Configuration saved successfully"));
         return;
       }
@@ -20,8 +21,8 @@ export async function configureStoryblok() {
       console.log(pc.yellow("No Storyblok configuration found."));
     }
 
-    // If no configuration found in .env or user wants to update
-    const config = await promptForConfig(envConfig);
+    // If no configuration found or user wants to update
+    const config = await promptForConfig(existingConfig || envConfig || {});
     await saveConfig(config);
     console.log(pc.green("✓ Configuration saved successfully"));
   } catch (error) {
