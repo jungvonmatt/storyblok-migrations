@@ -11,9 +11,9 @@ export async function configureStoryblok() {
     // Check if configuration exists in config file or .env
     if (existingConfig || envConfig.spaceId || envConfig.oauthToken) {
       const configToVerify = existingConfig || envConfig;
-      const useExisting = await verifyExistingConfig(configToVerify);
-      if (useExisting) {
-        await saveConfig(configToVerify as StoryblokConfig);
+      const verifiedConfig = await verifyExistingConfig(configToVerify);
+      if (verifiedConfig) {
+        await saveConfig(verifiedConfig);
         console.log(pc.green("✓ Configuration saved successfully"));
         return;
       }
@@ -32,7 +32,7 @@ export async function configureStoryblok() {
 
 async function verifyExistingConfig(
   config: Partial<StoryblokConfig>
-): Promise<boolean> {
+): Promise<StoryblokConfig | null> {
   console.log(pc.blue("Please verify the following options:"));
 
   if (config.spaceId) {
@@ -42,10 +42,33 @@ async function verifyExistingConfig(
     console.log(`OAuth Token: ${config.oauthToken}`);
   }
 
-  return confirm({
+  const useExisting = await confirm({
     message: "Would you like to use these values?",
     default: true,
   });
+
+  if (!useExisting) {
+    return null;
+  }
+
+  // If we're missing any required fields, prompt for them
+  const updatedConfig: Partial<StoryblokConfig> = { ...config };
+
+  if (!updatedConfig.spaceId) {
+    updatedConfig.spaceId = await input({
+      message: "Enter your Storyblok Space ID:",
+      validate: (value) => value.length > 0,
+    });
+  }
+
+  if (!updatedConfig.oauthToken) {
+    updatedConfig.oauthToken = await input({
+      message: "Enter your Storyblok OAuth Token:",
+      validate: (value) => value.length > 0,
+    });
+  }
+
+  return updatedConfig as StoryblokConfig;
 }
 
 async function promptForConfig(
