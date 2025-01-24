@@ -1,4 +1,4 @@
-import inquirer from "inquirer";
+import { confirm, input } from "@inquirer/prompts";
 import pc from "picocolors";
 import { StoryblokConfig } from "../types/config";
 import { loadEnvConfig, saveConfig } from "../utils/config";
@@ -10,8 +10,8 @@ export async function configureStoryblok() {
     // Check if configuration exists in .env
     if (envConfig.spaceId || envConfig.oauthToken) {
       // Found existing configuration in .env
-      const verificationAnswers = await verifyExistingConfig(envConfig);
-      if (verificationAnswers.useExisting) {
+      const useExisting = await verifyExistingConfig(envConfig);
+      if (useExisting) {
         await saveConfig(envConfig as StoryblokConfig);
         console.log(pc.green("✓ Configuration saved successfully"));
         return;
@@ -29,7 +29,9 @@ export async function configureStoryblok() {
   }
 }
 
-async function verifyExistingConfig(config: Partial<StoryblokConfig>) {
+async function verifyExistingConfig(
+  config: Partial<StoryblokConfig>
+): Promise<boolean> {
   console.log(pc.blue("Please verify the following options:"));
 
   if (config.spaceId) {
@@ -39,35 +41,29 @@ async function verifyExistingConfig(config: Partial<StoryblokConfig>) {
     console.log(`OAuth Token: ${config.oauthToken}`);
   }
 
-  return inquirer.prompt([
-    {
-      type: "confirm",
-      name: "useExisting",
-      message: "Would you like to use these values?",
-      default: true,
-    },
-  ]);
+  return confirm({
+    message: "Would you like to use these values?",
+    default: true,
+  });
 }
 
 async function promptForConfig(
   existing: Partial<StoryblokConfig>
 ): Promise<StoryblokConfig> {
-  const answers = await inquirer.prompt([
-    {
-      type: "input",
-      name: "spaceId",
-      message: "Enter your Storyblok Space ID:",
-      default: existing.spaceId,
-      validate: (input) => input.length > 0,
-    },
-    {
-      type: "input",
-      name: "oauthToken",
-      message: "Enter your Storyblok OAuth Token:",
-      default: existing.oauthToken,
-      validate: (input) => input.length > 0,
-    },
-  ]);
+  const spaceId = await input({
+    message: "Enter your Storyblok Space ID:",
+    default: existing.spaceId,
+    validate: (value) => value.length > 0,
+  });
 
-  return answers;
+  const oauthToken = await input({
+    message: "Enter your Storyblok OAuth Token:",
+    default: existing.oauthToken,
+    validate: (value) => value.length > 0,
+  });
+
+  return {
+    spaceId,
+    oauthToken,
+  };
 }

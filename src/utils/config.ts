@@ -6,6 +6,13 @@ import { StoryblokConfig } from "../types/config";
 
 const explorer = cosmiconfig("storyblok");
 
+// TODO:
+// 1. gibt es eine config
+// 2. evtl. ueberschreiben mit env variables
+// 3. ansonsten mit cli arguments
+// 4. Falls eine von beiden fehlt, spaceId oder oauthToken, dann nach der fehlenden fragen
+// 5. config speichern in .storyblok.config.json
+
 export async function loadEnvConfig(): Promise<Partial<StoryblokConfig>> {
   config(); // Load .env file
 
@@ -22,6 +29,7 @@ export async function saveConfig(config: StoryblokConfig): Promise<void> {
   );
 }
 
+// loadConfig combines all the above functions to load the Storyblok configuration
 export async function loadConfig(): Promise<StoryblokConfig | null> {
   const result = await explorer.search();
   return result?.config || null;

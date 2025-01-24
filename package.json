@@ -22,15 +22,14 @@
   "author": "Constantin Unterkofler",
   "license": "ISC",
   "devDependencies": {
-    "@types/inquirer": "^9.0.7",
     "@types/node": "^22.10.5",
     "typescript": "^5.7.3"
   },
   "dependencies": {
+    "@inquirer/prompts": "^7.2.3",
     "commander": "^13.0.0",
     "cosmiconfig": "^9.0.0",
     "dotenv": "^16.4.7",
-    "inquirer": "^12.3.1",
     "picocolors": "^1.1.1"
   }
 }
