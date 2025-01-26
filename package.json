@@ -12,7 +12,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc -w",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "test": "vitest"
   },
   "repository": {
     "type": "git",
@@ -23,7 +24,8 @@
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^22.10.5",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.4"
   },
   "dependencies": {
     "@inquirer/prompts": "^7.2.3",
