@@ -30,7 +30,7 @@ export async function configureStoryblok() {
   }
 }
 
-async function verifyExistingConfig(
+export async function verifyExistingConfig(
   config: Partial<StoryblokConfig>
 ): Promise<StoryblokConfig | null> {
   console.log(pc.blue("Please verify the following options:"));
@@ -71,7 +71,7 @@ async function verifyExistingConfig(
   return updatedConfig as StoryblokConfig;
 }
 
-async function promptForConfig(
+export async function promptForConfig(
   existing: Partial<StoryblokConfig>
 ): Promise<StoryblokConfig> {
   const spaceId = await input({
