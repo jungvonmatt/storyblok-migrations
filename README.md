@@ -31,3 +31,9 @@ storyblok-migrate
 ```bash
 pnpm unlink -g
 ```
+
+## Run tests
+
+```bash
+pnpm test
+```

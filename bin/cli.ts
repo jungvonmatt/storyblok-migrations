@@ -2,6 +2,7 @@
 
 import { Command } from "commander";
 import { configureStoryblok } from "../src/commands/config";
+import { loginToStoryblok } from "../src/commands/login";
 
 const program = new Command();
 
@@ -14,5 +15,10 @@ program
   .command("config")
   .description("Configure Storyblok credentials")
   .action(configureStoryblok);
+
+program
+  .command("login")
+  .description("Login to Storyblok CLI using configured credentials")
+  .action(loginToStoryblok);
 
 program.parse();
