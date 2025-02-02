@@ -4,6 +4,13 @@ Helper to handle migrations in storyblok
 
 ## Getting Started
 
+### Prerequisites
+
+- Node.js
+- Storyblok CLI (`npm install -g storyblok` or `yarn global add storyblok`)
+
+### Install dependencies
+
 ```bash
 pnpm install
 ```

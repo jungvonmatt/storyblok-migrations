@@ -2,7 +2,7 @@ import { execSync, spawnSync } from "child_process";
 import pc from "picocolors";
 import { loadConfig } from "../utils/config";
 
-function isStoryblokCliInstalled(): boolean {
+export function isStoryblokCliInstalled(): boolean {
   try {
     const result = spawnSync("storyblok", ["--version"]);
     return result.status === 0;
