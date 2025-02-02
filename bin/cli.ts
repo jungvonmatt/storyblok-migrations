@@ -4,6 +4,7 @@ import { Command } from "commander";
 import { configureStoryblok } from "../src/commands/config";
 import { loginToStoryblok } from "../src/commands/login";
 import { pullComponents } from "../src/commands/pull-components";
+import { generateTypes } from "../src/commands/generate-types";
 
 const program = new Command();
 
@@ -26,5 +27,10 @@ program
   .command("pull-components")
   .description("Pull components from Storyblok space")
   .action(pullComponents);
+
+program
+  .command("generate-types")
+  .description("Generate TypeScript types from Storyblok components schema")
+  .action(generateTypes);
 
 program.parse();
