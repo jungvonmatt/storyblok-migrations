@@ -84,6 +84,7 @@ export async function generateMigration() {
         }
       } catch (err) {
         // Continue to the next path
+        console.error(pc.red(`✗ Failed to read template file: ${err}`));
       }
     }
 

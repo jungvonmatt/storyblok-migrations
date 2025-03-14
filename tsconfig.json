@@ -3,6 +3,7 @@
   "display": "Node LTS (22)",
   "_version": "22.0.0",
   "compilerOptions": {
+    "allowArbitraryExtensions": true,
     "lib": ["es2023"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
@@ -15,7 +16,9 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "pretty": true,
+    "rewriteRelativeImportExtensions": true
   },
   "include": ["src/**/*", "bin/**/*"],
   "exclude": ["node_modules", "dist"]

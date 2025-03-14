@@ -44,7 +44,7 @@ export async function loginToStoryblok() {
       });
       console.log(pc.green("✓ Successfully logged in to Storyblok"));
     } catch (error) {
-      console.error(pc.red("✗ Failed to login to Storyblok."));
+      console.error(pc.red(`✗ Failed to login to Storyblok: ${error}`));
       process.exit(1);
     }
   } catch (error) {

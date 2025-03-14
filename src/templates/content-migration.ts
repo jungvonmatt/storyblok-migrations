@@ -25,5 +25,5 @@ export default async function (client: StoryblokClient) {
   //   }
   // });
 
-  console.log("Content migration completed");
+  console.log(`Content migration completed ${client}`);
 }

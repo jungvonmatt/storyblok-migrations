@@ -36,7 +36,9 @@ export async function pullComponents() {
       });
       console.log(pc.green("✓ Successfully pulled components"));
     } catch (error) {
-      console.error(pc.red("✗ Failed to pull components from Storyblok."));
+      console.error(
+        pc.red(`✗ Failed to pull components from Storyblok: ${error}`)
+      );
       process.exit(1);
     }
   } catch (error) {

@@ -13,7 +13,8 @@
     "build": "tsc && node scripts/copy-templates.js",
     "dev": "tsc -w",
     "prepare": "husky",
-    "test": "vitest run"
+    "test": "vitest run",
+    "types:check": "tsc --noEmit"
   },
   "repository": {
     "type": "git",
@@ -24,10 +25,10 @@
   "license": "MIT",
   "devDependencies": {
     "@types/lodash": "^4.17.16",
-    "@types/node": "^22.10.5",
+    "@types/node": "^22.13.10",
     "husky": "^9.1.7",
     "storyblok-generate-ts": "^2.2.0",
-    "typescript": "^5.7.3",
+    "typescript": "^5.8.2",
     "vitest": "^3.0.4"
   },
   "dependencies": {

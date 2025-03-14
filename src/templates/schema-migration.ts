@@ -41,5 +41,5 @@ export default async function (client: StoryblokClient) {
   //   }
   // });
 
-  console.log("Schema migration completed");
+  console.log(`Schema migration completed ${client}`);
 }

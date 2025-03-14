@@ -42,7 +42,7 @@ export async function generateTypes() {
 
     try {
       await storyblokToTypescript({
-        componentsJson: require(schemaFile),
+        componentsJson: JSON.parse(fs.readFileSync(schemaFile, "utf-8")),
         path: outputFile,
         titlePrefix: "Sb",
         titleSuffix: "",
@@ -117,7 +117,7 @@ export async function generateTypes() {
 
       console.log(pc.green("✓ Successfully generated TypeScript types"));
     } catch (error) {
-      console.error(pc.red("✗ Failed to generate TypeScript types"));
+      console.error(pc.red(`✗ Failed to generate TypeScript types: ${error}`));
       process.exit(1);
     }
   } catch (error) {
