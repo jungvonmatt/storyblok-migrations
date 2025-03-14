@@ -40,7 +40,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - run: npm ci
-      - run: npm test
-      - run: npm run types:check
-      - run: npm run lint
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - run: pnpm types:check
+      - run: pnpm lint
