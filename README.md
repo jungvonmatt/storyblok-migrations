@@ -1,5 +1,7 @@
 # Storyblok Migrations
 
+## Overview
+
 Storyblok Migrations offers additional functionality on top of the existing Storyblok CLI. It helps developers manage Storyblok components, generate TypeScript types, and handle configuration across projects. The main features are:
 
 - Login to Storyblok
@@ -9,10 +11,6 @@ Storyblok Migrations offers additional functionality on top of the existing Stor
 - Run Content Migrations
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-
-## Overview
-
-Storyblok Migrations is a command-line utility designed to streamline the workflow when working with Storyblok headless CMS. It helps developers manage Storyblok components, generate TypeScript types, and handle configuration across projects.
 
 ## Tech Stack
 
