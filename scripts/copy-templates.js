@@ -35,6 +35,7 @@ files.forEach((file) => {
   // Only copy .ts files
   if (file.endsWith(".ts")) {
     fs.copyFileSync(srcPath, destPath);
+    // eslint-disable-next-line no-undef
     console.log(`Copied ${srcPath} to ${destPath}`);
   }
 });

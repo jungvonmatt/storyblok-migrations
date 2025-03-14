@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { loadConfig } from "../utils/config";
 import pc from "picocolors";
 import path from "path";
