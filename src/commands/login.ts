@@ -30,7 +30,7 @@ export async function loginToStoryblok() {
     if (!config?.oauthToken) {
       console.error(
         pc.red(
-          "✗ No Storyblok OAuth token found. Please run 'storyblok-migrate config' first."
+          "✗ No Storyblok OAuth token found. Please run 'sb-migrate config' first."
         )
       );
       process.exit(1);

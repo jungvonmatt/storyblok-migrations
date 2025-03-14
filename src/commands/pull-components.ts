@@ -22,7 +22,7 @@ export async function pullComponents() {
     if (!config?.spaceId) {
       console.error(
         pc.red(
-          "✗ No Storyblok Space ID found. Please run 'storyblok-migrate config' first."
+          "✗ No Storyblok Space ID found. Please run 'sb-migrate config' first."
         )
       );
       process.exit(1);

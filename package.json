@@ -1,16 +1,16 @@
 {
-  "name": "storyblok-migrations",
+  "name": "sb-migrate",
   "version": "0.0.1",
   "description": "CLI tool for managing Storyblok content migrations",
   "main": "dist/index.js",
   "bin": {
-    "storyblok-migrate": "./dist/bin/cli.js"
+    "sb-migrate": "./dist/bin/cli.js"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node scripts/copy-templates.js",
     "dev": "tsc -w",
     "prepare": "husky",
     "test": "vitest run"
@@ -21,8 +21,9 @@
   },
   "keywords": [],
   "author": "Constantin Unterkofler",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
+    "@types/lodash": "^4.17.16",
     "@types/node": "^22.10.5",
     "husky": "^9.1.7",
     "storyblok-generate-ts": "^2.2.0",
@@ -34,7 +35,9 @@
     "commander": "^13.0.0",
     "cosmiconfig": "^9.0.0",
     "dotenv": "^16.4.7",
+    "lodash": "^4.17.21",
     "picocolors": "^1.1.1",
-    "storyblok": "^3.35.2"
+    "storyblok": "^3.35.2",
+    "storyblok-js-client": "^6.10.8"
   }
 }

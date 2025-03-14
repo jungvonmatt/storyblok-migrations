@@ -20,13 +20,22 @@ importers:
       dotenv:
         specifier: ^16.4.7
         version: 16.4.7
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
       picocolors:
         specifier: ^1.1.1
         version: 1.1.1
       storyblok:
         specifier: ^3.35.2
         version: 3.35.2
+      storyblok-js-client:
+        specifier: ^6.10.8
+        version: 6.10.8
     devDependencies:
+      '@types/lodash':
+        specifier: ^4.17.16
+        version: 4.17.16
       '@types/node':
         specifier: ^22.10.5
         version: 22.10.5
@@ -588,8 +597,8 @@ packages:
   '@types/keyv@3.1.4':
     resolution: {integrity: sha512-BQ5aZNSCpj7D6K2ksrRCTmKRLEpnPvWDiLPfoGyhZ++8YtiK9d/3DBKPJgry359X/P1PfruyYwvnvwFjuEiEIg==}
 
-  '@types/lodash@4.17.15':
-    resolution: {integrity: sha512-w/P33JFeySuhN6JLkysYUK2gEmy9kHHFN7E8ro0tkfmlDOgxBDzWEZ/J8cWA+fHqFevpswDTFZnDx+R9lbL6xw==}
+  '@types/lodash@4.17.16':
+    resolution: {integrity: sha512-HX7Em5NYQAXKW+1T+FiuG27NGwzJfCX3s1GjOa7ujxZa52kjJLOr4FUxT+giF6Tgxv1e+/czV/iTtBw27WTU9g==}
 
   '@types/minimatch@5.1.2':
     resolution: {integrity: sha512-K0VQKziLUWkVKiRVrx4a40iPaxTUefQmjtkQofBkYRcoaaL/8rhwDWww9qWbrgicNOgnpIsMxyNIUM4+n6dUIA==}
@@ -1677,6 +1686,9 @@ packages:
   storyblok-js-client@6.10.3:
     resolution: {integrity: sha512-q6YK/f+F8PAJLsKR7jzlTRO9yIUXWLON2Fy02QjywYaSYwyS9ETzIuOtmCSstLrDAP5I+Vnw9PzEU30roxS15g==}
 
+  storyblok-js-client@6.10.8:
+    resolution: {integrity: sha512-yjXzKQO16ry+LMEUksfLjO/Eq88DwMflHVxg1YDF2Ak13fHhSD/M36XE/E1jrTbjdVuxSnlxrt8jYP6NiCnCSQ==}
+
   storyblok@3.35.2:
     resolution: {integrity: sha512-G8OjOTPDjhQo5Nx4ajxASBj1dep99tzbruAjen9oMs2vmLsvD9sM4pV1hKt5iAplnq/G+Kjm0x16x8oOG92kWA==}
     engines: {node: '>=18.0.0'}
@@ -2389,7 +2401,7 @@ snapshots:
     dependencies:
       '@types/node': 22.10.5
 
-  '@types/lodash@4.17.15': {}
+  '@types/lodash@4.17.16': {}
 
   '@types/minimatch@5.1.2': {}
 
@@ -3100,7 +3112,7 @@ snapshots:
     dependencies:
       '@bcherny/json-schema-ref-parser': 10.0.5-fork
       '@types/json-schema': 7.0.15
-      '@types/lodash': 4.17.15
+      '@types/lodash': 4.17.16
       '@types/prettier': 2.7.3
       cli-color: 2.0.4
       get-stdin: 8.0.0
@@ -3117,7 +3129,7 @@ snapshots:
     dependencies:
       '@bcherny/json-schema-ref-parser': 10.0.5-fork
       '@types/json-schema': 7.0.15
-      '@types/lodash': 4.17.15
+      '@types/lodash': 4.17.16
       '@types/prettier': 2.7.3
       cli-color: 2.0.4
       get-stdin: 8.0.0
@@ -3496,6 +3508,8 @@ snapshots:
       - typescript
 
   storyblok-js-client@6.10.3: {}
+
+  storyblok-js-client@6.10.8: {}
 
   storyblok@3.35.2:
     dependencies:
