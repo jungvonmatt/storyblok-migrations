@@ -35,7 +35,9 @@ program
 
 program
   .command("generate-migration")
-  .description("Generate a migration file")
-  .action(generateMigration);
+  .description("Generate a migration file for a schema or content migration")
+  .option("-t,--type <TYPE>", "Type of migration ('schema' or 'content')")
+  .option("-n, --name <NAME>", "Name of the migration")
+  .action((options) => generateMigration(options));
 
 program.parse();

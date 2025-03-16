@@ -141,6 +141,11 @@ This command will:
 - Create a timestamped migration file in the appropriate directory
 - Include a template with example code for the selected migration type
 
+Options:
+
+- `-t, --type`: Type of migration (schema or content)
+- `-n, --name`: Name of the migration
+
 Schema migrations are used to modify component structures, while content migrations are used to update content entries.
 
 ## Configuration

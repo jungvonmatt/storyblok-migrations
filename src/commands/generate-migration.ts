@@ -6,27 +6,54 @@ import { template } from "lodash";
 
 type MigrationType = "schema" | "content";
 
-export async function generateMigration() {
-  try {
-    // Ask for migration type
-    const migrationType = await select<MigrationType>({
-      message: "What type of migration do you want to create?",
-      choices: [
-        { value: "schema", name: "Schema Migration (component structure)" },
-        { value: "content", name: "Content Migration (content entries)" },
-      ],
-    });
+interface GenerateMigrationOptions {
+  type?: string;
+  name?: string;
+}
 
-    // Ask for migration name
-    const migrationName = await input({
-      message: "Enter a name for your migration:",
-      validate: (value) => {
-        if (!value.trim()) return "Migration name cannot be empty";
-        if (!/^[a-z0-9-_]+$/i.test(value))
-          return "Migration name can only contain letters, numbers, hyphens, and underscores";
-        return true;
-      },
-    });
+export async function generateMigration(
+  options: GenerateMigrationOptions = {}
+) {
+  try {
+    // Get migration type from options or prompt
+    let migrationType: MigrationType | undefined = undefined;
+
+    // Validate type if provided
+    if (options.type) {
+      if (options.type !== "schema" && options.type !== "content") {
+        console.error(pc.red(`✗ Invalid migration type: ${options.type}`));
+        console.error(
+          pc.yellow(`Migration type must be either 'schema' or 'content'`)
+        );
+        process.exit(1);
+      }
+      migrationType = options.type as MigrationType;
+    }
+
+    // Prompt for type if not provided or invalid
+    if (!migrationType) {
+      migrationType = await select<MigrationType>({
+        message: "What type of migration do you want to create?",
+        choices: [
+          { value: "schema", name: "Schema Migration (component structure)" },
+          { value: "content", name: "Content Migration (content entries)" },
+        ],
+      });
+    }
+
+    // Get migration name from options or prompt
+    let migrationName = options.name;
+    if (!migrationName) {
+      migrationName = await input({
+        message: "Enter a name for your migration:",
+        validate: (value) => {
+          if (!value.trim()) return "Migration name cannot be empty";
+          if (!/^[a-z0-9-_]+$/i.test(value))
+            return "Migration name can only contain letters, numbers, hyphens, and underscores";
+          return true;
+        },
+      });
+    }
 
     // Create timestamp
     const timestamp = new Date()
