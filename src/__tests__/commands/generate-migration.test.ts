@@ -149,4 +149,37 @@ describe("generate-migration command", () => {
       expect.stringContaining("Failed to generate migration")
     );
   });
+
+  it("should use provided type and name options without prompting", async () => {
+    // Reset the mock implementations to track calls
+    vi.mocked(select).mockClear();
+    vi.mocked(input).mockClear();
+
+    await generateMigration({ type: "content", name: "cli-option-test" });
+
+    // Verify the prompts were not called
+    expect(select).not.toHaveBeenCalled();
+    expect(input).not.toHaveBeenCalled();
+
+    // Verify the correct migration was created
+    expect(fs.mkdirSync).toHaveBeenCalledWith(
+      expect.stringContaining("migrations/content"),
+      expect.any(Object)
+    );
+    expect(fs.writeFileSync).toHaveBeenCalledWith(
+      expect.stringContaining("20230101120000-cli-option-test.ts"),
+      expect.stringContaining("Content migration: cli-option-test")
+    );
+  });
+
+  it("should validate the type option and exit on invalid type", async () => {
+    await expect(generateMigration({ type: "invalid-type" })).rejects.toThrow(
+      "process.exit called"
+    );
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Invalid migration type: invalid-type")
+    );
+    expect(processExitSpy).toHaveBeenCalledWith(1);
+  });
 });
