@@ -1,7 +1,5 @@
 # Storyblok Migrations
 
-## Overview
-
 Storyblok Migrations offers additional functionality on top of the existing Storyblok CLI. It helps developers manage Storyblok components, generate TypeScript types, and handle configuration across projects. The main features are:
 
 - Login to Storyblok
