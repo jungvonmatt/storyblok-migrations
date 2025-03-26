@@ -6,6 +6,8 @@ import { loginToStoryblok } from "../src/commands/login";
 import { pullComponents } from "../src/commands/pull-components";
 import { generateTypes } from "../src/commands/generate-types";
 import { generateMigration } from "../src/commands/generate-migration";
+import { runSchema } from "../src/commands/run-schema";
+
 const program = new Command();
 
 program
@@ -39,5 +41,27 @@ program
   .option("-t,--type <TYPE>", "Type of migration ('schema' or 'content')")
   .option("-n, --name <NAME>", "Name of the migration")
   .action((options) => generateMigration(options));
+
+// TODO: improve the run-schema command so that it can run also all migrations in the migrations/schema folder
+// TODO: add a command to run all migrations in the migrations/schema folder
+// TODO: add the possibility to run a single migration file with a specific name and not the full path as argument
+program
+  .command("run-schema")
+  .description("Run a schema migration file against Storyblok")
+  .argument("<file>", "Path to the migration file")
+  .option("-d, --dry-run", "Preview changes without applying them", false)
+  .option("-s, --space <id>", "Storyblok space ID (overrides config)")
+  .option("-t, --token <token>", "Storyblok OAuth token (overrides config)")
+  .option(
+    "-p, --publish <mode>",
+    "Publish mode (all, published, published-with-changes)",
+    "published",
+  )
+  .option(
+    "-l, --languages <langs>",
+    "Languages to publish (default: ALL_LANGUAGES)",
+    "ALL_LANGUAGES",
+  )
+  .action((filePath, options) => runSchema(filePath, options));
 
 program.parse();
