@@ -7,6 +7,7 @@
     "lib": ["es2023"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "strictPropertyInitialization": false,
     "outDir": "./dist",
     "rootDir": "./",
     "target": "es2022",

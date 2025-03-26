@@ -15,6 +15,7 @@ export interface IPendingDataSourceEntry {
   name: string;
   value: string;
   datasource_id: number;
+  dimension_value?: null | string;
 }
 
 export interface IDataSourceEntry

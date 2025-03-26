@@ -49,6 +49,11 @@ export interface ISpace {
     is_demo: boolean;
     force_v1: boolean;
     force_v2: boolean;
+    component_groups: Array<{
+      id: number;
+      name: string;
+      uuid: string;
+    }>;
     languages: Array<{
       code: string;
       name: string;

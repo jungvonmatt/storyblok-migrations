@@ -10,6 +10,10 @@ import {
   IPendingDataSource,
   IPendingDataSourceEntry,
 } from "../types/IDataSource";
+import {
+  IComponentGroup,
+  IPendingComponentGroup,
+} from "../types/IComponentGroup";
 /**
  * Creates a new instance of the Storyblok client using configuration from either
  * the config file (.storyblokrc.json) or environment variables.
@@ -215,6 +219,46 @@ export const stories = {
 /**
  * API methods for managing Storyblok components
  */
+export const componentGroups = {
+  getAll(params: Record<string, any> = {}) {
+    return wrapRequest<{ component_groups: IComponentGroup[] }>(
+      `component_groups/`,
+      "get",
+      params,
+    );
+  },
+  get(id: number | string, params: Record<string, any> = {}) {
+    return wrapRequest<{ component_group: IComponentGroup }>(
+      `component_groups/${id}`,
+      "get",
+      params,
+    );
+  },
+  create(componentGroup: IPendingComponentGroup) {
+    return wrapRequest<{ component_group: IComponentGroup }>(
+      `component_groups/`,
+      "post",
+      { component_group: componentGroup },
+    );
+  },
+  update(componentGroup: IComponentGroup) {
+    return wrapRequest<{ component_group: IComponentGroup }>(
+      `component_groups/${componentGroup.id}`,
+      "put",
+      { component_group: componentGroup },
+    );
+  },
+  delete(componentGroupOrId: IComponentGroup | number | string) {
+    const path =
+      typeof componentGroupOrId === "number" ||
+      typeof componentGroupOrId === "string"
+        ? `component_groups/${componentGroupOrId}`
+        : `component_groups/${componentGroupOrId.id}`;
+
+    return wrapRequest<{ component_group: IComponentGroup }>(path, "delete");
+  },
+};
+
 export const components = {
   getAll(params: Record<string, any> = {}) {
     return wrapRequest<{ components: IComponent[] }>(
@@ -389,4 +433,13 @@ export const datasourceEntries = {
 
     return wrapRequest<{ datasource: IStory }>(path, "delete");
   },
+};
+
+export const api = {
+  spaces,
+  stories,
+  componentGroups,
+  components,
+  datasources,
+  datasourceEntries,
 };

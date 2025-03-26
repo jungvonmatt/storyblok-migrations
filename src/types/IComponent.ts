@@ -276,10 +276,6 @@ export type IComponentSchemaItem =
   | IComponentSchemaItemOption
   | IComponentSchemaItemOptions;
 
-// export interface IComponentSchema {
-//   [property: string]: IComponentSchemaItem | IComponentSchemaTab;
-// }
-
 /**
  * Interface of a pending Storyblok component.
  *
