@@ -2,6 +2,7 @@
 
 Storyblok Migrations offers additional functionality on top of the existing Storyblok CLI. It helps developers manage Storyblok components, generate TypeScript types, and handle configuration across projects. The main features are:
 
+- Configure Storyblok credentials (Space ID and OAuth token)
 - Login to Storyblok
 - Pull component schemas
 - Generate TypeScript types
@@ -26,8 +27,8 @@ Storyblok Migrations offers additional functionality on top of the existing Stor
 - Login to Storyblok CLI using configured credentials
 - Pull component schemas from Storyblok spaces
 - Generate TypeScript type definitions from component schemas
-- Environment variable support via dotenv
-- Configuration file support (.storyblokrc.json)
+- Run Component(Schema) Migrations
+- Run Content Migrations
 
 ## Getting Started
 
@@ -145,6 +146,22 @@ Options:
 - `-n, --name`: Name of the migration
 
 Schema migrations are used to modify component structures, while content migrations are used to update content entries.
+
+### Run Component(Schema) Migrations
+
+Run a schema migration file against Storyblok:
+
+```bash
+sb-migrate run-schema <migration-file>
+```
+
+Options:
+
+- `-d, --dry-run`: Preview changes without applying them
+- `-s, --space <id>`: Storyblok space ID (overrides config)
+- `-t, --token <token>`: Storyblok OAuth token (overrides config)
+- `-p, --publish <mode>`: Publish mode (all, published, published-with-changes)
+- `-l, --languages <langs>`: Languages to publish (default: ALL_LANGUAGES)
 
 ## Configuration
 
