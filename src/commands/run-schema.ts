@@ -2,72 +2,33 @@
 import fs from "fs";
 import path from "path";
 import pc from "picocolors";
-import {
-  Component,
-  helper,
-  RunMigrationOptions,
-  MigrationFn,
-} from "../utils/migration";
+import { Component, helper, RunMigrationOptions } from "../utils/migration";
 import { api, UpdateStoryPayload, CreateStoryPayload } from "../utils/api";
 import { addOrUpdateDatasource } from "../utils/storyblok";
+import {
+  ComponentGroupMigration,
+  ComponentMigration,
+  DatasourceEntryMigration,
+  DatasourceMigration,
+  Migration,
+  RunSchemaOptions,
+  StoryMigration,
+  TransformEntriesMigration,
+} from "../types/migration";
+import { MigrationType } from "../types/migration";
 
-// TODO: add all types to a separate file
-export type ComponentGroupMigration = {
-  name: string;
-  uuid?: string;
-};
-
-export type ComponentMigration = {
-  name: string;
-  display_name?: string;
-  is_root?: boolean;
-  is_nestable?: boolean;
-  component_group_name?: string;
-  schema: Record<string, any>;
-  tabs?: Record<string, string[]>;
-};
-
-export type StoryMigration = {
-  name: string;
-  slug?: string;
-  parent_id?: number;
-  content: Record<string, any>;
-  publish?: boolean;
-  release_id?: number;
-  lang?: string;
-};
-
-export type DatasourceMigration = {
-  name: string;
-  slug: string;
-};
-
-export type DatasourceEntryMigration = {
-  datasource_id: number | string;
-  name: string;
-  value: string;
-  dimension_value?: string;
-};
-
-export type TransformEntriesMigration = {
-  component: string;
-  transform: MigrationFn;
-  publish?: "all" | "published" | "published-with-changes";
-  languages?: string;
-};
-
-export interface RunSchemaOptions {
-  dryRun?: boolean;
-  space?: string;
-  token?: string;
-  publish?: "all" | "published" | "published-with-changes";
-  languages?: string;
+/**
+ * Define a migration with type safety
+ * @param migration The migration object
+ * @returns The same migration object (for future extensibility)
+ */
+export function defineMigration<T extends MigrationType>(
+  migration: Extract<Migration, { type: T }>,
+): Extract<Migration, { type: T }> {
+  return migration;
 }
 
-// TODO: refactor runSchema to use a single function for all migration types that will be exported from the sb-migration package.
-// The could be a single function that takes a migration object and options and then executes the migration.
-// This should make it possible to use type safety and autocomplete for the migration objects.
-// TODO: make it also possible to use different types of files as input, e.g. yaml, .js, .ts.
+// Update the runSchema function to use the new runMigration function
 export async function runSchema(
   filePath: string,
   options: RunSchemaOptions = {},
@@ -92,8 +53,6 @@ export async function runSchema(
       publishLanguages: options.languages,
     };
 
-    // Execute the migration based on its type
-    // TODO: add migration types to a constants file
     switch (migration.type) {
       case "create-component-group":
         await handleCreateComponentGroup(migration, migrationOptions);
@@ -144,12 +103,8 @@ export async function runSchema(
         await handleTransformEntries(migration, migrationOptions);
         break;
       default:
-        console.error(
-          `${pc.red("✗")} Unknown migration type: ${migration.type}`,
-        );
-        process.exit(1);
+        throw new Error(`Unknown migration type: ${(migration as any).type}`);
     }
-
     console.log(
       `${pc.green("✓")} Migration completed successfully at ${new Date().toISOString()}`,
     );
