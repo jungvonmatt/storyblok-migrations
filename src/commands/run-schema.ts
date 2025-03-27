@@ -64,6 +64,10 @@ export interface RunSchemaOptions {
   languages?: string;
 }
 
+// TODO: refactor runSchema to use a single function for all migration types that will be exported from the sb-migration package.
+// The could be a single function that takes a migration object and options and then executes the migration.
+// This should make it possible to use type safety and autocomplete for the migration objects.
+// TODO: make it also possible to use different types of files as input, e.g. yaml, .js, .ts.
 export async function runSchema(
   filePath: string,
   options: RunSchemaOptions = {},
