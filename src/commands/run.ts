@@ -11,7 +11,7 @@ import {
   DatasourceEntryMigration,
   DatasourceMigration,
   Migration,
-  RunSchemaOptions,
+  RunOptions,
   StoryMigration,
   TransformEntriesMigration,
 } from "../types/migration";
@@ -51,10 +51,7 @@ export function defineMigration<T extends MigrationType>(
   return migration;
 }
 
-export async function runSchema(
-  filePath: string,
-  options: RunSchemaOptions = {},
-) {
+export async function run(filePath: string, options: RunOptions = {}) {
   try {
     // Resolve and load the migration file
     const resolvedPath = path.resolve(process.cwd(), filePath);

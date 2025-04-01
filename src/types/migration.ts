@@ -57,7 +57,7 @@ export type DatasourceEntryMigration = {
   dimension_value?: string;
 };
 
-export interface RunSchemaOptions {
+export interface RunOptions {
   dryRun?: boolean;
   space?: string;
   token?: string;
