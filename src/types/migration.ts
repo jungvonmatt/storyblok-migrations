@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { MigrationFn } from "../utils/migration";
+import { IComponentSchemaItem } from "./IComponent";
+import { IStoryContent } from "./stories";
 
-// src/types/migration.ts
 export type MigrationType =
   | "create-component-group"
   | "update-component-group"
@@ -31,7 +31,7 @@ export type ComponentMigration = {
   is_root?: boolean;
   is_nestable?: boolean;
   component_group_name?: string;
-  schema: Record<string, any>;
+  schema: Record<string, IComponentSchemaItem>;
   tabs?: Record<string, string[]>;
 };
 
@@ -39,7 +39,7 @@ export type StoryMigration = {
   name: string;
   slug?: string;
   parent_id?: number;
-  content: Record<string, any>;
+  content: IStoryContent;
   publish?: boolean;
   release_id?: number;
   lang?: string;

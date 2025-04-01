@@ -17,10 +17,33 @@ import {
 } from "../types/migration";
 import { MigrationType } from "../types/migration";
 
+// TODO: Make it possible to use ESM syntax in the migration files
+// TODO: Make it possible to use different file extensions for the migration files (e.g. .js, .ts, .yaml, etc.)
+
 /**
- * Define a migration with type safety
- * @param migration The migration object
- * @returns The same migration object (for future extensibility)
+ * Define a type-safe migration object for Storyblok schema changes.
+ * This helper function provides compile-time type checking for different migration types.
+ *
+ * @param migration A strongly-typed migration object that must match one of the following types:
+ *                 - ComponentGroupMigration (create/update/delete component groups)
+ *                 - ComponentMigration (create/update/delete components)
+ *                 - DatasourceMigration (create/update datasources)
+ *                 - DatasourceEntryMigration (create/update datasource entries)
+ *                 - StoryMigration (create/update stories)
+ *                 - TransformEntriesMigration (bulk transform content entries)
+ *
+ * @returns The provided migration object without any transformation
+ * @example
+ * ```ts
+ * const migration = defineMigration({
+ *   type: 'create-component',
+ *   name: 'my-component',
+ *   component: {
+ *     name: 'My Component',
+ *     // ... component definition
+ *   }
+ * });
+ * ```
  */
 export function defineMigration<T extends MigrationType>(
   migration: Extract<Migration, { type: T }>,
@@ -28,7 +51,6 @@ export function defineMigration<T extends MigrationType>(
   return migration;
 }
 
-// Update the runSchema function to use the new runMigration function
 export async function runSchema(
   filePath: string,
   options: RunSchemaOptions = {},
@@ -128,7 +150,6 @@ async function handleCreateComponentGroup(
   }
 
   try {
-    // Directly fetch existing component groups
     const response = await api.componentGroups.getAll();
     const existingGroups = response.data.component_groups || [];
 
@@ -172,7 +193,6 @@ async function handleUpdateComponentGroup(
   }
 
   try {
-    // Fetch the component group to update
     const response = await api.componentGroups.getAll();
     const existingGroups = response.data.component_groups || [];
     const existingGroup = existingGroups.find((g) => g.id === migration.id);
@@ -185,7 +205,6 @@ async function handleUpdateComponentGroup(
       `${pc.blue("-")} Updating group: ${existingGroup.name} to ${migration.group.name}`,
     );
 
-    // You'll need to implement this API endpoint
     await api.componentGroups.update({
       id: existingGroup.id,
       name: migration.group.name,
@@ -211,7 +230,6 @@ async function handleDeleteComponentGroup(
   }
 
   try {
-    // Fetch the component group to confirm it exists
     const response = await api.componentGroups.getAll();
     const existingGroups = response.data.component_groups || [];
     const existingGroup = existingGroups.find((g) => g.id === migration.id);
@@ -222,7 +240,6 @@ async function handleDeleteComponentGroup(
 
     console.log(`${pc.blue("-")} Deleting group: ${existingGroup.name}`);
 
-    // You'll need to implement this API endpoint
     await api.componentGroups.delete(migration.id);
 
     console.log(`${pc.green("✓")} Component group deleted successfully`);
@@ -245,7 +262,6 @@ async function handleCreateComponent(
   }
 
   try {
-    // Check if component already exists
     const response = await api.components.getAll();
     const existingComponents = response.data.components || [];
     const existingComponent = existingComponents.find(
@@ -328,14 +344,18 @@ async function handleUpdateComponent(
   }
 
   try {
-    // Use the helper from migration.js to get or create the component
     const component = await helper.updateComponent(migration.name);
 
     // Update fields if provided
     if (migration.schema) {
       component.addOrUpdateFields(
-        migration.schema.schema,
-        migration.schema.tabs,
+        migration.schema,
+        migration.tabs
+          ? {
+              general: migration.tabs.general || [],
+              ...migration.tabs,
+            }
+          : undefined,
       );
     }
 
@@ -498,7 +518,9 @@ async function handleUpdateStory(
         ...migration.story.content,
         // Ensure component is always set
         component:
-          migration.story.content.component || story.content?.component,
+          migration.story.content.component ||
+          story.content?.component ||
+          "default",
       };
     }
 
@@ -761,7 +783,6 @@ async function handleTransformEntries(
   try {
     const component = await helper.updateComponent(migration.component);
 
-    // Use the transformEntries method from the Component class
     await component.transformEntries(migration.transform, {
       isDryrun: options.isDryrun,
       publish: migration.publish || options.publish,
