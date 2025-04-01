@@ -6,6 +6,7 @@
     "allowArbitraryExtensions": true,
     "lib": ["es2023"],
     "module": "NodeNext",
+    "declaration": true,
     "moduleResolution": "NodeNext",
     "strictPropertyInitialization": false,
     "outDir": "./dist",

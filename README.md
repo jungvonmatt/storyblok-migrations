@@ -229,6 +229,18 @@ sb-migrate
 pnpm unlink -g
 ```
 
+4. You can also pack the package and install it locally in a repository
+
+```bash
+pnpm pack
+```
+
+5. Install the package in a repository
+
+```bash
+pnpm install path/to/package.tgz
+```
+
 ### Run tests
 
 ```bash
