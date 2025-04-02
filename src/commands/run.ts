@@ -178,7 +178,7 @@ async function handleCreateComponentGroup(
 }
 
 async function handleUpdateComponentGroup(
-  migration: { id: number; group: ComponentGroupMigration },
+  migration: { id: number | string; group: ComponentGroupMigration },
   options: RunMigrationOptions,
 ) {
   console.log(`${pc.blue("-")} Updating component group: ${migration.id}`);
@@ -192,10 +192,22 @@ async function handleUpdateComponentGroup(
   try {
     const response = await api.componentGroups.getAll();
     const existingGroups = response.data.component_groups || [];
-    const existingGroup = existingGroups.find((g) => g.id === migration.id);
+
+    // Find component group by ID or name
+    const existingGroup = existingGroups.find(
+      (g) =>
+        g.id === migration.id ||
+        (typeof migration.id === "string" && g.name === migration.id),
+    );
 
     if (!existingGroup) {
-      throw new Error(`Component group with ID ${migration.id} not found`);
+      throw new Error(`Component group "${migration.id}" not found`);
+    }
+
+    if (!existingGroup.id || !existingGroup.uuid) {
+      throw new Error(
+        `Component group "${migration.id}" has missing required properties`,
+      );
     }
 
     console.log(
@@ -216,7 +228,7 @@ async function handleUpdateComponentGroup(
 }
 
 async function handleDeleteComponentGroup(
-  migration: { id: number },
+  migration: { id: number | string },
   options: RunMigrationOptions,
 ) {
   console.log(`${pc.blue("-")} Deleting component group: ${migration.id}`);
@@ -229,15 +241,25 @@ async function handleDeleteComponentGroup(
   try {
     const response = await api.componentGroups.getAll();
     const existingGroups = response.data.component_groups || [];
-    const existingGroup = existingGroups.find((g) => g.id === migration.id);
+
+    // Find component group by ID or name
+    const existingGroup = existingGroups.find(
+      (g) =>
+        g.id === migration.id ||
+        (typeof migration.id === "string" && g.name === migration.id),
+    );
 
     if (!existingGroup) {
-      throw new Error(`Component group with ID ${migration.id} not found`);
+      throw new Error(`Component group "${migration.id}" not found`);
+    }
+
+    if (!existingGroup.id) {
+      throw new Error(`Component group "${migration.id}" has no ID`);
     }
 
     console.log(`${pc.blue("-")} Deleting group: ${existingGroup.name}`);
 
-    await api.componentGroups.delete(migration.id);
+    await api.componentGroups.delete(existingGroup.id);
 
     console.log(`${pc.green("✓")} Component group deleted successfully`);
   } catch (error) {
