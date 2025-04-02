@@ -493,7 +493,7 @@ async function handleCreateStory(
 }
 
 async function handleUpdateStory(
-  migration: { id: number; story: Partial<StoryMigration> },
+  migration: { id: number | string; story: Partial<StoryMigration> },
   options: RunMigrationOptions,
 ) {
   console.log(`${pc.blue("-")} Updating story: ${migration.id}`);
@@ -505,9 +505,15 @@ async function handleUpdateStory(
   }
 
   try {
-    // Get the current story
-    const response = await api.stories.get(migration.id);
-    const story = response.data.story;
+    // Get the story using either numeric ID or slug
+    const story =
+      typeof migration.id === "number"
+        ? (await api.stories.get(migration.id)).data.story
+        : await api.stories.getBySlug(migration.id);
+
+    if (!story) {
+      throw new Error(`Story "${migration.id}" not found`);
+    }
 
     // Apply updates
     if (migration.story.name) {
@@ -558,7 +564,7 @@ async function handleUpdateStory(
 }
 
 async function handleDeleteStory(
-  migration: { id: number },
+  migration: { id: number | string },
   options: RunMigrationOptions,
 ) {
   console.log(`${pc.blue("-")} Deleting story: ${migration.id}`);
@@ -569,19 +575,25 @@ async function handleDeleteStory(
   }
 
   try {
-    // First get the story to verify it exists
-    const response = await api.stories.get(migration.id);
-    const story = response.data.story;
+    // Get the story using either numeric ID or slug
+    const story =
+      typeof migration.id === "number"
+        ? (await api.stories.get(migration.id)).data.story
+        : await api.stories.getBySlug(migration.id);
 
     if (!story) {
-      throw new Error(`Story with ID "${migration.id}" not found`);
+      throw new Error(`Story "${migration.id}" not found`);
+    }
+
+    if (!story.id) {
+      throw new Error(`Story "${migration.id}" has no ID`);
     }
 
     console.log(
       `${pc.blue("-")} Deleting story: ${story.name} (${story.full_slug})`,
     );
 
-    await api.stories.delete(migration.id);
+    await api.stories.delete(story.id);
     console.log(
       `${pc.green("✓")} Story deleted successfully: ${story.full_slug}`,
     );
