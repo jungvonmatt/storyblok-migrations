@@ -361,7 +361,7 @@ export const datasources = {
       `datasources/${entry.id}`,
       "put",
       {
-        entry,
+        datasource: entry,
       },
     );
   },

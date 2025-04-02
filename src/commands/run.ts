@@ -405,7 +405,18 @@ async function handleDeleteComponent(
   }
 
   try {
-    await api.components.delete(migration.name);
+    // First get all components to find the one we want to delete
+    const response = await api.components.getAll();
+    const existingComponents = response.data.components || [];
+    const componentToDelete = existingComponents.find(
+      (c) => c.name === migration.name || c.id === migration.name,
+    );
+
+    if (!componentToDelete) {
+      throw new Error(`Component "${migration.name}" not found`);
+    }
+
+    await api.components.delete(componentToDelete.id);
     console.log(
       `${pc.green("✓")} Component deleted successfully: ${migration.name}`,
     );
@@ -558,8 +569,22 @@ async function handleDeleteStory(
   }
 
   try {
+    // First get the story to verify it exists
+    const response = await api.stories.get(migration.id);
+    const story = response.data.story;
+
+    if (!story) {
+      throw new Error(`Story with ID "${migration.id}" not found`);
+    }
+
+    console.log(
+      `${pc.blue("-")} Deleting story: ${story.name} (${story.full_slug})`,
+    );
+
     await api.stories.delete(migration.id);
-    console.log(`${pc.green("✓")} Story deleted successfully: ${migration.id}`);
+    console.log(
+      `${pc.green("✓")} Story deleted successfully: ${story.full_slug}`,
+    );
   } catch (error) {
     console.error(`${pc.red("✗")} Failed to delete story:`, error);
     throw error;
@@ -663,9 +688,19 @@ async function handleDeleteDatasource(
   }
 
   try {
+    // First verify the datasource exists
+    const response = await api.datasources.get(migration.id);
+    const datasource = response.data.datasource;
+
+    if (!datasource) {
+      throw new Error(`Datasource with ID "${migration.id}" not found`);
+    }
+
+    console.log(`${pc.blue("-")} Deleting datasource: ${datasource.name}`);
+
     await api.datasources.delete(migration.id);
     console.log(
-      `${pc.green("✓")} Datasource deleted successfully: ${migration.id}`,
+      `${pc.green("✓")} Datasource deleted successfully: ${datasource.name}`,
     );
   } catch (error) {
     console.error(`${pc.red("✗")} Failed to delete datasource:`, error);
@@ -688,15 +723,37 @@ async function handleCreateDatasourceEntry(
   }
 
   try {
-    const response = await api.datasourceEntries.create({
-      datasource_id: Number(migration.entry.datasource_id),
+    // If datasource_id is a string (slug), get the numeric ID first
+    let datasourceId = migration.entry.datasource_id;
+    let datasourceName = "";
+
+    if (typeof datasourceId === "string") {
+      const response = await api.datasources.getAll();
+      const datasource = response.data.datasources.find(
+        (d) => d.slug === datasourceId || d.name === datasourceId,
+      );
+
+      if (!datasource) {
+        throw new Error(`Datasource "${datasourceId}" not found`);
+      }
+
+      datasourceId = datasource.id;
+      datasourceName = datasource.name;
+    } else {
+      // If we got a numeric ID, get the datasource name for logging
+      const response = await api.datasources.get(datasourceId);
+      datasourceName = response.data.datasource?.name || `ID: ${datasourceId}`;
+    }
+
+    await api.datasourceEntries.create({
+      datasource_id: datasourceId,
       name: migration.entry.name,
       value: migration.entry.value,
       dimension_value: migration.entry.dimension_value,
     });
 
     console.log(
-      `${pc.green("✓")} Datasource entry created successfully: ${response.data.datasource.name}`,
+      `${pc.green("✓")} Datasource entry "${migration.entry.name}" created successfully in datasource "${datasourceName}"`,
     );
   } catch (error) {
     console.error(`${pc.red("✗")} Failed to create datasource entry:`, error);
@@ -753,9 +810,19 @@ async function handleDeleteDatasourceEntry(
   }
 
   try {
+    // First verify the entry exists
+    const response = await api.datasourceEntries.get(migration.id);
+    const entry = response.data.datasource;
+
+    if (!entry) {
+      throw new Error(`Datasource entry with ID "${migration.id}" not found`);
+    }
+
+    console.log(`${pc.blue("-")} Deleting datasource entry: ${entry.name}`);
+
     await api.datasourceEntries.delete(migration.id);
     console.log(
-      `${pc.green("✓")} Datasource entry deleted successfully: ${migration.id}`,
+      `${pc.green("✓")} Datasource entry deleted successfully: ${entry.name}`,
     );
   } catch (error) {
     console.error(`${pc.red("✗")} Failed to delete datasource entry:`, error);
