@@ -16,6 +16,8 @@ import {
   TransformEntriesMigration,
 } from "../types/migration";
 import { MigrationType } from "../types/migration";
+import { cloneDeep } from "lodash";
+import { createRollbackFile } from "../utils/storyblok";
 
 // TODO: Make it possible to use ESM syntax in the migration files
 // TODO: Make it possible to use different file extensions for the migration files (e.g. .js, .ts, .yaml, etc.)
@@ -365,6 +367,9 @@ async function handleUpdateComponent(
   try {
     const component = await helper.updateComponent(migration.name);
 
+    // Store original component data for rollback
+    const originalComponent = cloneDeep(component.instance);
+
     // Update fields if provided
     if (migration.schema) {
       component.addOrUpdateFields(
@@ -406,6 +411,27 @@ async function handleUpdateComponent(
 
     // Save the component
     await component.save();
+
+    // Create rollback data
+    const rollbackData = [
+      {
+        id: originalComponent.id,
+        name: originalComponent.name,
+        schema: originalComponent.schema,
+        display_name: originalComponent.display_name,
+        is_root: originalComponent.is_root,
+        is_nestable: originalComponent.is_nestable,
+        component_group_uuid: originalComponent.component_group_uuid,
+      },
+    ];
+
+    // Create rollback file
+    await createRollbackFile(
+      rollbackData,
+      `component_${migration.name.replace(/[^a-zA-Z0-9]/g, "_")}`,
+      "update",
+    );
+
     console.log(
       `${pc.green("✓")} Component updated successfully: ${migration.name}`,
     );
@@ -537,6 +563,9 @@ async function handleUpdateStory(
       throw new Error(`Story "${migration.id}" not found`);
     }
 
+    // Store original story data for rollback
+    const originalStory = cloneDeep(story);
+
     // Apply updates
     if (migration.story.name) {
       story.name = migration.story.name;
@@ -576,6 +605,28 @@ async function handleUpdateStory(
 
     // Update the story
     await api.stories.update(story, payload);
+
+    // Create rollback data
+    const rollbackData = [
+      {
+        id: originalStory.id,
+        full_slug: originalStory.full_slug,
+        content: originalStory.content,
+        name: originalStory.name,
+        slug: originalStory.slug,
+        parent_id: originalStory.parent_id,
+      },
+    ];
+
+    // Generate a unique identifier for this migration
+    const migrationId =
+      typeof migration.id === "string"
+        ? migration.id.replace(/[^a-zA-Z0-9]/g, "_")
+        : migration.id;
+
+    // Create rollback file
+    await createRollbackFile(rollbackData, `story_${migrationId}`, "update");
+
     console.log(
       `${pc.green("✓")} Story updated successfully: ${story.full_slug}`,
     );
@@ -692,6 +743,9 @@ async function handleUpdateDatasource(
     const response = await api.datasources.get(migration.id);
     const datasource = response.data.datasource;
 
+    // Store original datasource for rollback
+    const originalDatasource = cloneDeep(datasource);
+
     // Apply updates
     if (migration.datasource.name) {
       datasource.name = migration.datasource.name;
@@ -701,6 +755,30 @@ async function handleUpdateDatasource(
     }
 
     await api.datasources.update(datasource);
+
+    // Create rollback data
+    const rollbackData = [
+      {
+        id: originalDatasource.id,
+        name: originalDatasource.name,
+        slug: originalDatasource.slug,
+        dimensions: originalDatasource.dimensions,
+      },
+    ];
+
+    // Generate a unique identifier for this migration
+    const migrationId =
+      typeof migration.id === "string"
+        ? migration.id.replace(/[^a-zA-Z0-9]/g, "_")
+        : migration.id;
+
+    // Create rollback file
+    await createRollbackFile(
+      rollbackData,
+      `datasource_${migrationId}`,
+      "update",
+    );
+
     console.log(
       `${pc.green("✓")} Datasource updated successfully: ${datasource.name}`,
     );
