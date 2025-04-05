@@ -211,19 +211,16 @@ The following migration types are supported:
 - `create-component` - Create a new component with schema
 - `update-component` - Update an existing component schema
 - `delete-component` - Delete a component
-- `create-datasource` - Create a datasource
-- `update-datasource` - Update a datasource
+- `create-datasource` - Create a datasource and its entries
+- `update-datasource` - Update a datasource slug, name and add, update or delete entries.
 - `delete-datasource` - Delete a datasource
-- `create-datasource-entry` - Create a datasource entry
-- `update-datasource-entry` - Update a datasource entry
-- `delete-datasource-entry` - Delete a datasource entry
 
 #### Content Migrations
 
 - `create-story` - Create a new content entry
 - `update-story` - Update an existing content entry
 - `delete-story` - Delete a content entry
-- `transform-entries` - Apply transformations to all entries using a specific component
+- `transform-entries` - Apply transformations to all entries using a specific component and a transform function.
 
 ### Content Migration Example
 

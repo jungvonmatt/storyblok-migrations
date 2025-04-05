@@ -139,8 +139,11 @@ export interface DeleteDatasourceMigration extends BaseMigration {
   id: number | string;
 }
 
+// TODO: Evaluate if we need to handle create, update and delete of datasource entries
+// as they are handled in the datasource migration already.
+
 // Datasource Entry Migrations
-export interface CreateDatasourceEntryMigration extends BaseMigration {
+/* export interface CreateDatasourceEntryMigration extends BaseMigration {
   type: "create-datasource-entry";
   entry: DatasourceEntryMigration;
 }
@@ -154,8 +157,9 @@ export interface UpdateDatasourceEntryMigration extends BaseMigration {
 export interface DeleteDatasourceEntryMigration extends BaseMigration {
   type: "delete-datasource-entry";
   id: number | string;
-}
+} */
 
+// Transform Entries Migration
 export interface TransformEntriesMigration extends BaseMigration {
   type: "transform-entries";
   component: string;
@@ -178,7 +182,4 @@ export type Migration =
   | CreateDatasourceMigration
   | UpdateDatasourceMigration
   | DeleteDatasourceMigration
-  | CreateDatasourceEntryMigration
-  | UpdateDatasourceEntryMigration
-  | DeleteDatasourceEntryMigration
   | TransformEntriesMigration;

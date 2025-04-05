@@ -8,7 +8,6 @@ import { addOrUpdateDatasource } from "../utils/storyblok";
 import {
   ComponentGroupMigration,
   ComponentMigration,
-  DatasourceEntryMigration,
   DatasourceMigration,
   Migration,
   RunOptions,
@@ -18,6 +17,7 @@ import {
 import { MigrationType } from "../types/migration";
 import { cloneDeep } from "lodash";
 import { createRollbackFile } from "../utils/storyblok";
+import { IPendingDataSourceEntry } from "../types/IDataSource";
 
 // TODO: Make it possible to use ESM syntax in the migration files
 // TODO: Make it possible to use different file extensions for the migration files (e.g. .js, .ts, .yaml, etc.)
@@ -111,7 +111,7 @@ export async function run(filePath: string, options: RunOptions = {}) {
       case "delete-datasource":
         await handleDeleteDatasource(migration, migrationOptions);
         break;
-      case "create-datasource-entry":
+      /*       case "create-datasource-entry":
         await handleCreateDatasourceEntry(migration, migrationOptions);
         break;
       case "update-datasource-entry":
@@ -119,7 +119,7 @@ export async function run(filePath: string, options: RunOptions = {}) {
         break;
       case "delete-datasource-entry":
         await handleDeleteDatasourceEntry(migration, migrationOptions);
-        break;
+        break; */
       case "transform-entries":
         await handleTransformEntries(migration, migrationOptions);
         break;
@@ -674,7 +674,10 @@ async function handleDeleteStory(
 }
 
 async function handleCreateDatasource(
-  migration: { datasource: DatasourceMigration; entries?: any[] },
+  migration: {
+    datasource: DatasourceMigration;
+    entries?: Omit<IPendingDataSourceEntry, "datasource_id">[];
+  },
   options: RunMigrationOptions,
 ) {
   console.log(
@@ -728,7 +731,7 @@ async function handleUpdateDatasource(
   migration: {
     id: number | string;
     datasource?: Partial<DatasourceMigration>;
-    entries?: any[];
+    entries?: Omit<IPendingDataSourceEntry, "datasource_id">[];
   },
   options: RunMigrationOptions,
 ) {
@@ -850,7 +853,10 @@ async function handleDeleteDatasource(
   }
 }
 
-async function handleCreateDatasourceEntry(
+// TODO: Evaluate if we need to handle create, update and delete of datasource entries
+// We can handle create, update and delete of datasource entries in the handleCreateDatasource and handleUpdateDatasource functions already.
+
+/* async function handleCreateDatasourceEntry(
   migration: { entry: DatasourceEntryMigration },
   options: RunMigrationOptions,
 ) {
@@ -904,7 +910,7 @@ async function handleCreateDatasourceEntry(
 }
 
 async function handleUpdateDatasourceEntry(
-  migration: { id: number | string; entry: Partial<DatasourceEntryMigration> },
+  migration: { id: number; entry: Partial<DatasourceEntryMigration> },
   options: RunMigrationOptions,
 ) {
   console.log(`${pc.blue("-")} Updating datasource entry: ${migration.id}`);
@@ -941,7 +947,7 @@ async function handleUpdateDatasourceEntry(
 }
 
 async function handleDeleteDatasourceEntry(
-  migration: { id: number | string },
+  migration: { id: number },
   options: RunMigrationOptions,
 ) {
   console.log(`${pc.blue("-")} Deleting datasource entry: ${migration.id}`);
@@ -970,7 +976,7 @@ async function handleDeleteDatasourceEntry(
     console.error(`${pc.red("✗")} Failed to delete datasource entry:`, error);
     throw error;
   }
-}
+} */
 
 async function handleTransformEntries(
   migration: TransformEntriesMigration,
