@@ -126,9 +126,6 @@ export async function run(filePath: string, options: RunOptions = {}) {
       default:
         throw new Error(`Unknown migration type: ${(migration as any).type}`);
     }
-    console.log(
-      `${pc.green("✓")} Migration completed successfully at ${new Date().toISOString()}`,
-    );
   } catch (error) {
     console.error(`${pc.red("✗")} Migration failed:`, error);
     process.exit(1);
@@ -728,7 +725,11 @@ async function handleCreateDatasource(
 }
 
 async function handleUpdateDatasource(
-  migration: { id: number | string; datasource: Partial<DatasourceMigration> },
+  migration: {
+    id: number | string;
+    datasource?: Partial<DatasourceMigration>;
+    entries?: any[];
+  },
   options: RunMigrationOptions,
 ) {
   console.log(`${pc.blue("-")} Updating datasource: ${migration.id}`);
@@ -739,22 +740,55 @@ async function handleUpdateDatasource(
     return;
   }
 
+  if (!migration.datasource && !migration.entries) {
+    console.error(
+      `${pc.red("✗")} Must provide either datasource updates or entries`,
+    );
+    return;
+  }
+
   try {
+    // First get the datasource details
     const response = await api.datasources.get(migration.id);
     const datasource = response.data.datasource;
 
     // Store original datasource for rollback
     const originalDatasource = cloneDeep(datasource);
 
-    // Apply updates
-    if (migration.datasource.name) {
-      datasource.name = migration.datasource.name;
-    }
-    if (migration.datasource.slug) {
-      datasource.slug = migration.datasource.slug;
+    // First update the datasource properties if provided
+    if (migration.datasource) {
+      if (migration.datasource.name) {
+        datasource.name = migration.datasource.name;
+      }
+      if (migration.datasource.slug) {
+        datasource.slug = migration.datasource.slug;
+      }
+
+      await api.datasources.update(datasource);
+      console.log(
+        `${pc.green("✓")} Datasource properties updated successfully: ${datasource.name}`,
+      );
     }
 
-    await api.datasources.update(datasource);
+    // Then handle entries if provided
+    if (migration.entries && migration.entries.length > 0) {
+      const entries = migration.entries || [];
+      const [, datasourceEntries] = await addOrUpdateDatasource(
+        {
+          name: datasource.name,
+          slug: datasource.slug,
+        },
+        entries.map((entry) => ({
+          name: entry.name,
+          value: entry.value,
+          dimension_value: entry.dimension_value,
+        })),
+      );
+
+      console.log(
+        `${pc.green("-")} Updated ${datasourceEntries.length} entries`,
+      );
+    }
 
     // Create rollback data
     const rollbackData = [
@@ -777,10 +811,6 @@ async function handleUpdateDatasource(
       rollbackData,
       `datasource_${migrationId}`,
       "update",
-    );
-
-    console.log(
-      `${pc.green("✓")} Datasource updated successfully: ${datasource.name}`,
     );
   } catch (error) {
     console.error(`${pc.red("✗")} Failed to update datasource:`, error);
