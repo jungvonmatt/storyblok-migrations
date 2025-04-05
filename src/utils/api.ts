@@ -194,6 +194,31 @@ export const stories = {
   get(id: number, params: Record<string, any> = {}) {
     return wrapRequest<{ story: IStory }>(`stories/${id}`, "get", params);
   },
+  async getBySlug(slug: string) {
+    const slugParts = slug.split("/");
+    const name = slugParts[slugParts.length - 1];
+    const folder = slugParts.length > 1 ? slugParts.slice(0, -1).join("/") : "";
+
+    const params: Record<string, any> = { per_page: 100 };
+    if (folder) {
+      params.starts_with = folder;
+    }
+
+    const response = await stories.getAll(params);
+    const story = response.data.stories.find(
+      (s) => s.slug === name || s.full_slug === slug,
+    );
+
+    if (!story) {
+      throw new Error(`Story with slug "${slug}" not found`);
+    }
+
+    if (!story.id) {
+      throw new Error(`Story with slug "${slug}" has no ID`);
+    }
+
+    return (await stories.get(story.id)).data.story;
+  },
   create(story: IPendingStory, params: CreateStoryPayload = {}) {
     return wrapRequest<{ story: IStory }>(`stories/`, "post", {
       story,
@@ -361,7 +386,7 @@ export const datasources = {
       `datasources/${entry.id}`,
       "put",
       {
-        entry,
+        datasource: entry,
       },
     );
   },

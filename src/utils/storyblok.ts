@@ -208,8 +208,9 @@ export const createRollbackFile = async (
       fs.mkdirSync(MIGRATIONS_ROLLBACK_DIRECTORY, { recursive: true });
     }
 
-    // Define the rollback file path
-    const fileName = `rollback_${component}_${field}.json`;
+    // Define the rollback file path with date
+    const date = new Date().toISOString().split("T")[0];
+    const fileName = `${date}_rollback_${component}_${field}.json`;
     const filePath = path.join(MIGRATIONS_ROLLBACK_DIRECTORY, fileName);
 
     // Remove existing file if present

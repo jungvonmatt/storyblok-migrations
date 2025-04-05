@@ -2,7 +2,14 @@
   "name": "sb-migrate",
   "version": "0.0.1",
   "description": "CLI tool for managing Storyblok content migrations",
-  "main": "dist/index.js",
+  "main": "dist/src/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/src/index.js",
+      "require": "./dist/src/index.js"
+    }
+  },
+  "types": "dist/src/index.d.ts",
   "bin": {
     "sb-migrate": "./dist/bin/cli.js"
   },

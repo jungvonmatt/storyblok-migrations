@@ -147,12 +147,12 @@ Options:
 
 Schema migrations are used to modify component structures, while content migrations are used to update content entries.
 
-### Run Component(Schema) Migrations
+### Run Migrations
 
-Run a schema migration file against Storyblok:
+Run a schema or content migration file against Storyblok:
 
 ```bash
-sb-migrate run-schema <migration-file>
+sb-migrate run <migration-file>
 ```
 
 Options:
@@ -162,6 +162,99 @@ Options:
 - `-t, --token <token>`: Storyblok OAuth token (overrides config)
 - `-p, --publish <mode>`: Publish mode (all, published, published-with-changes)
 - `-l, --languages <langs>`: Languages to publish (default: ALL_LANGUAGES)
+
+## Using Migrations
+
+Storyblok Migrations provides a type-safe way to define migrations using the `defineMigration` function.
+
+### Type-Safe Migrations
+
+The `defineMigration` function provides full TypeScript support for creating any type of migration:
+
+```typescript
+import { defineMigration } from "sb-migrate";
+
+export default defineMigration({
+  type: "create-component",
+  schema: {
+    name: "new-component",
+    display_name: "New Component",
+    is_root: false,
+    is_nestable: true,
+    component_group_name: "Content",
+    schema: {
+      title: {
+        type: "text",
+        pos: 0,
+      },
+      subtitle: {
+        type: "text",
+        pos: 1,
+      },
+    },
+    tabs: {
+      general: ["title", "subtitle"],
+    },
+  },
+});
+```
+
+### Migration Types
+
+The following migration types are supported:
+
+#### Schema Migrations
+
+- `create-component-group` - Create a new component group
+- `update-component-group` - Update an existing component group
+- `delete-component-group` - Delete a component group
+- `create-component` - Create a new component with schema
+- `update-component` - Update an existing component schema
+- `delete-component` - Delete a component
+- `create-datasource` - Create a datasource and its entries
+- `update-datasource` - Update a datasource slug, name and add, update or delete entries.
+- `delete-datasource` - Delete a datasource
+
+#### Content Migrations
+
+- `create-story` - Create a new content entry
+- `update-story` - Update an existing content entry
+- `delete-story` - Delete a content entry
+- `transform-entries` - Apply transformations to all entries using a specific component and a transform function.
+
+### Content Migration Example
+
+The most powerful way to perform content migrations is using the `transform-entries` type:
+
+```typescript
+import { defineMigration } from "sb-migrate";
+
+export default defineMigration({
+  type: "transform-entries",
+  component: "my-component",
+  transform: (content) => {
+    // Rename a field
+    if (content.old_field) {
+      content.new_field = content.old_field;
+      delete content.old_field;
+    }
+
+    // Convert format of existing field
+    if (content.price) {
+      content.price = Number(content.price).toFixed(2);
+    }
+
+    // Add new field with default value
+    if (!content.status) {
+      content.status = "active";
+    }
+  },
+  // Optionally control publishing behavior
+  publish: "published-with-changes",
+});
+```
+
+This migration will be applied to all instances of "my-component" across your content, making it an efficient way to perform bulk content updates.
 
 ## Configuration
 
@@ -227,6 +320,18 @@ sb-migrate
 
 ```bash
 pnpm unlink -g
+```
+
+4. You can also pack the package and install it locally in a repository
+
+```bash
+pnpm pack
+```
+
+5. Install the package in a repository
+
+```bash
+pnpm install path/to/package.tgz
 ```
 
 ### Run tests

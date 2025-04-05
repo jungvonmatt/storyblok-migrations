@@ -2,76 +2,58 @@
 import fs from "fs";
 import path from "path";
 import pc from "picocolors";
-import {
-  Component,
-  helper,
-  RunMigrationOptions,
-  MigrationFn,
-} from "../utils/migration";
+import { Component, helper, RunMigrationOptions } from "../utils/migration";
 import { api, UpdateStoryPayload, CreateStoryPayload } from "../utils/api";
 import { addOrUpdateDatasource } from "../utils/storyblok";
+import {
+  ComponentGroupMigration,
+  ComponentMigration,
+  DatasourceMigration,
+  Migration,
+  RunOptions,
+  StoryMigration,
+  TransformEntriesMigration,
+} from "../types/migration";
+import { MigrationType } from "../types/migration";
+import { cloneDeep } from "lodash";
+import { createRollbackFile } from "../utils/storyblok";
+import { IPendingDataSourceEntry } from "../types/IDataSource";
 
-// TODO: add all types to a separate file
-export type ComponentGroupMigration = {
-  name: string;
-  uuid?: string;
-};
+// TODO: Make it possible to use ESM syntax in the migration files
+// TODO: Make it possible to use different file extensions for the migration files (e.g. .js, .ts, .yaml, etc.)
 
-export type ComponentMigration = {
-  name: string;
-  display_name?: string;
-  is_root?: boolean;
-  is_nestable?: boolean;
-  component_group_name?: string;
-  schema: Record<string, any>;
-  tabs?: Record<string, string[]>;
-};
-
-export type StoryMigration = {
-  name: string;
-  slug?: string;
-  parent_id?: number;
-  content: Record<string, any>;
-  publish?: boolean;
-  release_id?: number;
-  lang?: string;
-};
-
-export type DatasourceMigration = {
-  name: string;
-  slug: string;
-};
-
-export type DatasourceEntryMigration = {
-  datasource_id: number | string;
-  name: string;
-  value: string;
-  dimension_value?: string;
-};
-
-export type TransformEntriesMigration = {
-  component: string;
-  transform: MigrationFn;
-  publish?: "all" | "published" | "published-with-changes";
-  languages?: string;
-};
-
-export interface RunSchemaOptions {
-  dryRun?: boolean;
-  space?: string;
-  token?: string;
-  publish?: "all" | "published" | "published-with-changes";
-  languages?: string;
+/**
+ * Define a type-safe migration object for Storyblok schema changes.
+ * This helper function provides compile-time type checking for different migration types.
+ *
+ * @param migration A strongly-typed migration object that must match one of the following types:
+ *                 - ComponentGroupMigration (create/update/delete component groups)
+ *                 - ComponentMigration (create/update/delete components)
+ *                 - DatasourceMigration (create/update datasources)
+ *                 - DatasourceEntryMigration (create/update datasource entries)
+ *                 - StoryMigration (create/update stories)
+ *                 - TransformEntriesMigration (bulk transform content entries)
+ *
+ * @returns The provided migration object without any transformation
+ * @example
+ * ```ts
+ * const migration = defineMigration({
+ *   type: 'create-component',
+ *   name: 'my-component',
+ *   component: {
+ *     name: 'My Component',
+ *     // ... component definition
+ *   }
+ * });
+ * ```
+ */
+export function defineMigration<T extends MigrationType>(
+  migration: Extract<Migration, { type: T }>,
+): Extract<Migration, { type: T }> {
+  return migration;
 }
 
-// TODO: refactor runSchema to use a single function for all migration types that will be exported from the sb-migration package.
-// The could be a single function that takes a migration object and options and then executes the migration.
-// This should make it possible to use type safety and autocomplete for the migration objects.
-// TODO: make it also possible to use different types of files as input, e.g. yaml, .js, .ts.
-export async function runSchema(
-  filePath: string,
-  options: RunSchemaOptions = {},
-) {
+export async function run(filePath: string, options: RunOptions = {}) {
   try {
     // Resolve and load the migration file
     const resolvedPath = path.resolve(process.cwd(), filePath);
@@ -92,8 +74,6 @@ export async function runSchema(
       publishLanguages: options.languages,
     };
 
-    // Execute the migration based on its type
-    // TODO: add migration types to a constants file
     switch (migration.type) {
       case "create-component-group":
         await handleCreateComponentGroup(migration, migrationOptions);
@@ -131,7 +111,7 @@ export async function runSchema(
       case "delete-datasource":
         await handleDeleteDatasource(migration, migrationOptions);
         break;
-      case "create-datasource-entry":
+      /*       case "create-datasource-entry":
         await handleCreateDatasourceEntry(migration, migrationOptions);
         break;
       case "update-datasource-entry":
@@ -139,20 +119,13 @@ export async function runSchema(
         break;
       case "delete-datasource-entry":
         await handleDeleteDatasourceEntry(migration, migrationOptions);
-        break;
+        break; */
       case "transform-entries":
         await handleTransformEntries(migration, migrationOptions);
         break;
       default:
-        console.error(
-          `${pc.red("✗")} Unknown migration type: ${migration.type}`,
-        );
-        process.exit(1);
+        throw new Error(`Unknown migration type: ${(migration as any).type}`);
     }
-
-    console.log(
-      `${pc.green("✓")} Migration completed successfully at ${new Date().toISOString()}`,
-    );
   } catch (error) {
     console.error(`${pc.red("✗")} Migration failed:`, error);
     process.exit(1);
@@ -173,7 +146,6 @@ async function handleCreateComponentGroup(
   }
 
   try {
-    // Directly fetch existing component groups
     const response = await api.componentGroups.getAll();
     const existingGroups = response.data.component_groups || [];
 
@@ -205,7 +177,7 @@ async function handleCreateComponentGroup(
 }
 
 async function handleUpdateComponentGroup(
-  migration: { id: number; group: ComponentGroupMigration },
+  migration: { id: number | string; group: ComponentGroupMigration },
   options: RunMigrationOptions,
 ) {
   console.log(`${pc.blue("-")} Updating component group: ${migration.id}`);
@@ -217,20 +189,30 @@ async function handleUpdateComponentGroup(
   }
 
   try {
-    // Fetch the component group to update
     const response = await api.componentGroups.getAll();
     const existingGroups = response.data.component_groups || [];
-    const existingGroup = existingGroups.find((g) => g.id === migration.id);
+
+    // Find component group by ID or name
+    const existingGroup = existingGroups.find(
+      (g) =>
+        g.id === migration.id ||
+        (typeof migration.id === "string" && g.name === migration.id),
+    );
 
     if (!existingGroup) {
-      throw new Error(`Component group with ID ${migration.id} not found`);
+      throw new Error(`Component group "${migration.id}" not found`);
+    }
+
+    if (!existingGroup.id || !existingGroup.uuid) {
+      throw new Error(
+        `Component group "${migration.id}" has missing required properties`,
+      );
     }
 
     console.log(
       `${pc.blue("-")} Updating group: ${existingGroup.name} to ${migration.group.name}`,
     );
 
-    // You'll need to implement this API endpoint
     await api.componentGroups.update({
       id: existingGroup.id,
       name: migration.group.name,
@@ -245,7 +227,7 @@ async function handleUpdateComponentGroup(
 }
 
 async function handleDeleteComponentGroup(
-  migration: { id: number },
+  migration: { id: number | string },
   options: RunMigrationOptions,
 ) {
   console.log(`${pc.blue("-")} Deleting component group: ${migration.id}`);
@@ -256,19 +238,27 @@ async function handleDeleteComponentGroup(
   }
 
   try {
-    // Fetch the component group to confirm it exists
     const response = await api.componentGroups.getAll();
     const existingGroups = response.data.component_groups || [];
-    const existingGroup = existingGroups.find((g) => g.id === migration.id);
+
+    // Find component group by ID or name
+    const existingGroup = existingGroups.find(
+      (g) =>
+        g.id === migration.id ||
+        (typeof migration.id === "string" && g.name === migration.id),
+    );
 
     if (!existingGroup) {
-      throw new Error(`Component group with ID ${migration.id} not found`);
+      throw new Error(`Component group "${migration.id}" not found`);
+    }
+
+    if (!existingGroup.id) {
+      throw new Error(`Component group "${migration.id}" has no ID`);
     }
 
     console.log(`${pc.blue("-")} Deleting group: ${existingGroup.name}`);
 
-    // You'll need to implement this API endpoint
-    await api.componentGroups.delete(migration.id);
+    await api.componentGroups.delete(existingGroup.id);
 
     console.log(`${pc.green("✓")} Component group deleted successfully`);
   } catch (error) {
@@ -290,7 +280,6 @@ async function handleCreateComponent(
   }
 
   try {
-    // Check if component already exists
     const response = await api.components.getAll();
     const existingComponents = response.data.components || [];
     const existingComponent = existingComponents.find(
@@ -373,14 +362,21 @@ async function handleUpdateComponent(
   }
 
   try {
-    // Use the helper from migration.js to get or create the component
     const component = await helper.updateComponent(migration.name);
+
+    // Store original component data for rollback
+    const originalComponent = cloneDeep(component.instance);
 
     // Update fields if provided
     if (migration.schema) {
       component.addOrUpdateFields(
-        migration.schema.schema,
-        migration.schema.tabs,
+        migration.schema,
+        migration.tabs
+          ? {
+              general: migration.tabs.general || [],
+              ...migration.tabs,
+            }
+          : undefined,
       );
     }
 
@@ -412,6 +408,27 @@ async function handleUpdateComponent(
 
     // Save the component
     await component.save();
+
+    // Create rollback data
+    const rollbackData = [
+      {
+        id: originalComponent.id,
+        name: originalComponent.name,
+        schema: originalComponent.schema,
+        display_name: originalComponent.display_name,
+        is_root: originalComponent.is_root,
+        is_nestable: originalComponent.is_nestable,
+        component_group_uuid: originalComponent.component_group_uuid,
+      },
+    ];
+
+    // Create rollback file
+    await createRollbackFile(
+      rollbackData,
+      `component_${migration.name.replace(/[^a-zA-Z0-9]/g, "_")}`,
+      "update",
+    );
+
     console.log(
       `${pc.green("✓")} Component updated successfully: ${migration.name}`,
     );
@@ -433,7 +450,18 @@ async function handleDeleteComponent(
   }
 
   try {
-    await api.components.delete(migration.name);
+    // First get all components to find the one we want to delete
+    const response = await api.components.getAll();
+    const existingComponents = response.data.components || [];
+    const componentToDelete = existingComponents.find(
+      (c) => c.name === migration.name || c.id === migration.name,
+    );
+
+    if (!componentToDelete) {
+      throw new Error(`Component "${migration.name}" not found`);
+    }
+
+    await api.components.delete(componentToDelete.id);
     console.log(
       `${pc.green("✓")} Component deleted successfully: ${migration.name}`,
     );
@@ -510,7 +538,7 @@ async function handleCreateStory(
 }
 
 async function handleUpdateStory(
-  migration: { id: number; story: Partial<StoryMigration> },
+  migration: { id: number | string; story: Partial<StoryMigration> },
   options: RunMigrationOptions,
 ) {
   console.log(`${pc.blue("-")} Updating story: ${migration.id}`);
@@ -522,9 +550,18 @@ async function handleUpdateStory(
   }
 
   try {
-    // Get the current story
-    const response = await api.stories.get(migration.id);
-    const story = response.data.story;
+    // Get the story using either numeric ID or slug
+    const story =
+      typeof migration.id === "number"
+        ? (await api.stories.get(migration.id)).data.story
+        : await api.stories.getBySlug(migration.id);
+
+    if (!story) {
+      throw new Error(`Story "${migration.id}" not found`);
+    }
+
+    // Store original story data for rollback
+    const originalStory = cloneDeep(story);
 
     // Apply updates
     if (migration.story.name) {
@@ -543,7 +580,9 @@ async function handleUpdateStory(
         ...migration.story.content,
         // Ensure component is always set
         component:
-          migration.story.content.component || story.content?.component,
+          migration.story.content.component ||
+          story.content?.component ||
+          "default",
       };
     }
 
@@ -563,6 +602,28 @@ async function handleUpdateStory(
 
     // Update the story
     await api.stories.update(story, payload);
+
+    // Create rollback data
+    const rollbackData = [
+      {
+        id: originalStory.id,
+        full_slug: originalStory.full_slug,
+        content: originalStory.content,
+        name: originalStory.name,
+        slug: originalStory.slug,
+        parent_id: originalStory.parent_id,
+      },
+    ];
+
+    // Generate a unique identifier for this migration
+    const migrationId =
+      typeof migration.id === "string"
+        ? migration.id.replace(/[^a-zA-Z0-9]/g, "_")
+        : migration.id;
+
+    // Create rollback file
+    await createRollbackFile(rollbackData, `story_${migrationId}`, "update");
+
     console.log(
       `${pc.green("✓")} Story updated successfully: ${story.full_slug}`,
     );
@@ -573,7 +634,7 @@ async function handleUpdateStory(
 }
 
 async function handleDeleteStory(
-  migration: { id: number },
+  migration: { id: number | string },
   options: RunMigrationOptions,
 ) {
   console.log(`${pc.blue("-")} Deleting story: ${migration.id}`);
@@ -584,8 +645,28 @@ async function handleDeleteStory(
   }
 
   try {
-    await api.stories.delete(migration.id);
-    console.log(`${pc.green("✓")} Story deleted successfully: ${migration.id}`);
+    // Get the story using either numeric ID or slug
+    const story =
+      typeof migration.id === "number"
+        ? (await api.stories.get(migration.id)).data.story
+        : await api.stories.getBySlug(migration.id);
+
+    if (!story) {
+      throw new Error(`Story "${migration.id}" not found`);
+    }
+
+    if (!story.id) {
+      throw new Error(`Story "${migration.id}" has no ID`);
+    }
+
+    console.log(
+      `${pc.blue("-")} Deleting story: ${story.name} (${story.full_slug})`,
+    );
+
+    await api.stories.delete(story.id);
+    console.log(
+      `${pc.green("✓")} Story deleted successfully: ${story.full_slug}`,
+    );
   } catch (error) {
     console.error(`${pc.red("✗")} Failed to delete story:`, error);
     throw error;
@@ -593,7 +674,10 @@ async function handleDeleteStory(
 }
 
 async function handleCreateDatasource(
-  migration: { datasource: DatasourceMigration; entries?: any[] },
+  migration: {
+    datasource: DatasourceMigration;
+    entries?: Omit<IPendingDataSourceEntry, "datasource_id">[];
+  },
   options: RunMigrationOptions,
 ) {
   console.log(
@@ -644,7 +728,11 @@ async function handleCreateDatasource(
 }
 
 async function handleUpdateDatasource(
-  migration: { id: number | string; datasource: Partial<DatasourceMigration> },
+  migration: {
+    id: number | string;
+    datasource?: Partial<DatasourceMigration>;
+    entries?: Omit<IPendingDataSourceEntry, "datasource_id">[];
+  },
   options: RunMigrationOptions,
 ) {
   console.log(`${pc.blue("-")} Updating datasource: ${migration.id}`);
@@ -655,21 +743,77 @@ async function handleUpdateDatasource(
     return;
   }
 
+  if (!migration.datasource && !migration.entries) {
+    console.error(
+      `${pc.red("✗")} Must provide either datasource updates or entries`,
+    );
+    return;
+  }
+
   try {
+    // First get the datasource details
     const response = await api.datasources.get(migration.id);
     const datasource = response.data.datasource;
 
-    // Apply updates
-    if (migration.datasource.name) {
-      datasource.name = migration.datasource.name;
-    }
-    if (migration.datasource.slug) {
-      datasource.slug = migration.datasource.slug;
+    // Store original datasource for rollback
+    const originalDatasource = cloneDeep(datasource);
+
+    // First update the datasource properties if provided
+    if (migration.datasource) {
+      if (migration.datasource.name) {
+        datasource.name = migration.datasource.name;
+      }
+      if (migration.datasource.slug) {
+        datasource.slug = migration.datasource.slug;
+      }
+
+      await api.datasources.update(datasource);
+      console.log(
+        `${pc.green("✓")} Datasource properties updated successfully: ${datasource.name}`,
+      );
     }
 
-    await api.datasources.update(datasource);
-    console.log(
-      `${pc.green("✓")} Datasource updated successfully: ${datasource.name}`,
+    // Then handle entries if provided
+    if (migration.entries && migration.entries.length > 0) {
+      const entries = migration.entries || [];
+      const [, datasourceEntries] = await addOrUpdateDatasource(
+        {
+          name: datasource.name,
+          slug: datasource.slug,
+        },
+        entries.map((entry) => ({
+          name: entry.name,
+          value: entry.value,
+          dimension_value: entry.dimension_value,
+        })),
+      );
+
+      console.log(
+        `${pc.green("-")} Updated ${datasourceEntries.length} entries`,
+      );
+    }
+
+    // Create rollback data
+    const rollbackData = [
+      {
+        id: originalDatasource.id,
+        name: originalDatasource.name,
+        slug: originalDatasource.slug,
+        dimensions: originalDatasource.dimensions,
+      },
+    ];
+
+    // Generate a unique identifier for this migration
+    const migrationId =
+      typeof migration.id === "string"
+        ? migration.id.replace(/[^a-zA-Z0-9]/g, "_")
+        : migration.id;
+
+    // Create rollback file
+    await createRollbackFile(
+      rollbackData,
+      `datasource_${migrationId}`,
+      "update",
     );
   } catch (error) {
     console.error(`${pc.red("✗")} Failed to update datasource:`, error);
@@ -689,9 +833,19 @@ async function handleDeleteDatasource(
   }
 
   try {
+    // First verify the datasource exists
+    const response = await api.datasources.get(migration.id);
+    const datasource = response.data.datasource;
+
+    if (!datasource) {
+      throw new Error(`Datasource with ID "${migration.id}" not found`);
+    }
+
+    console.log(`${pc.blue("-")} Deleting datasource: ${datasource.name}`);
+
     await api.datasources.delete(migration.id);
     console.log(
-      `${pc.green("✓")} Datasource deleted successfully: ${migration.id}`,
+      `${pc.green("✓")} Datasource deleted successfully: ${datasource.name}`,
     );
   } catch (error) {
     console.error(`${pc.red("✗")} Failed to delete datasource:`, error);
@@ -699,7 +853,10 @@ async function handleDeleteDatasource(
   }
 }
 
-async function handleCreateDatasourceEntry(
+// TODO: Evaluate if we need to handle create, update and delete of datasource entries
+// We can handle create, update and delete of datasource entries in the handleCreateDatasource and handleUpdateDatasource functions already.
+
+/* async function handleCreateDatasourceEntry(
   migration: { entry: DatasourceEntryMigration },
   options: RunMigrationOptions,
 ) {
@@ -714,15 +871,37 @@ async function handleCreateDatasourceEntry(
   }
 
   try {
-    const response = await api.datasourceEntries.create({
-      datasource_id: Number(migration.entry.datasource_id),
+    // If datasource_id is a string (slug), get the numeric ID first
+    let datasourceId = migration.entry.datasource_id;
+    let datasourceName = "";
+
+    if (typeof datasourceId === "string") {
+      const response = await api.datasources.getAll();
+      const datasource = response.data.datasources.find(
+        (d) => d.slug === datasourceId || d.name === datasourceId,
+      );
+
+      if (!datasource) {
+        throw new Error(`Datasource "${datasourceId}" not found`);
+      }
+
+      datasourceId = datasource.id;
+      datasourceName = datasource.name;
+    } else {
+      // If we got a numeric ID, get the datasource name for logging
+      const response = await api.datasources.get(datasourceId);
+      datasourceName = response.data.datasource?.name || `ID: ${datasourceId}`;
+    }
+
+    await api.datasourceEntries.create({
+      datasource_id: datasourceId,
       name: migration.entry.name,
       value: migration.entry.value,
       dimension_value: migration.entry.dimension_value,
     });
 
     console.log(
-      `${pc.green("✓")} Datasource entry created successfully: ${response.data.datasource.name}`,
+      `${pc.green("✓")} Datasource entry "${migration.entry.name}" created successfully in datasource "${datasourceName}"`,
     );
   } catch (error) {
     console.error(`${pc.red("✗")} Failed to create datasource entry:`, error);
@@ -731,7 +910,7 @@ async function handleCreateDatasourceEntry(
 }
 
 async function handleUpdateDatasourceEntry(
-  migration: { id: number | string; entry: Partial<DatasourceEntryMigration> },
+  migration: { id: number; entry: Partial<DatasourceEntryMigration> },
   options: RunMigrationOptions,
 ) {
   console.log(`${pc.blue("-")} Updating datasource entry: ${migration.id}`);
@@ -768,7 +947,7 @@ async function handleUpdateDatasourceEntry(
 }
 
 async function handleDeleteDatasourceEntry(
-  migration: { id: number | string },
+  migration: { id: number },
   options: RunMigrationOptions,
 ) {
   console.log(`${pc.blue("-")} Deleting datasource entry: ${migration.id}`);
@@ -779,15 +958,25 @@ async function handleDeleteDatasourceEntry(
   }
 
   try {
+    // First verify the entry exists
+    const response = await api.datasourceEntries.get(migration.id);
+    const entry = response.data.datasource;
+
+    if (!entry) {
+      throw new Error(`Datasource entry with ID "${migration.id}" not found`);
+    }
+
+    console.log(`${pc.blue("-")} Deleting datasource entry: ${entry.name}`);
+
     await api.datasourceEntries.delete(migration.id);
     console.log(
-      `${pc.green("✓")} Datasource entry deleted successfully: ${migration.id}`,
+      `${pc.green("✓")} Datasource entry deleted successfully: ${entry.name}`,
     );
   } catch (error) {
     console.error(`${pc.red("✗")} Failed to delete datasource entry:`, error);
     throw error;
   }
-}
+} */
 
 async function handleTransformEntries(
   migration: TransformEntriesMigration,
@@ -806,7 +995,6 @@ async function handleTransformEntries(
   try {
     const component = await helper.updateComponent(migration.component);
 
-    // Use the transformEntries method from the Component class
     await component.transformEntries(migration.transform, {
       isDryrun: options.isDryrun,
       publish: migration.publish || options.publish,
