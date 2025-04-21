@@ -1,4 +1,3 @@
-// Example: migrations/schema/20230101000000-add-new-component.ts
 import { defineMigration } from "sb-migrate";
 
 export default defineMigration({

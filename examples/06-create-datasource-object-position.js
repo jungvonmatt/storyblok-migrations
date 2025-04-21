@@ -1,5 +1,4 @@
-/* eslint-disable no-undef */
-const type = "create-datasource";
+import { defineMigration } from "sb-migrate";
 
 const datasource = {
   name: "Object Position",
@@ -18,4 +17,8 @@ const entries = [
   { name: "Bottom Right", value: "bottom right" },
 ];
 
-module.exports = { type, datasource, entries };
+export default defineMigration({
+  type: "create-datasource",
+  datasource,
+  entries,
+});

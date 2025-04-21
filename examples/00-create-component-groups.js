@@ -1,5 +1,4 @@
-/* eslint-disable no-undef */
-const type = "create-component-group";
+import { defineMigration } from "sb-migrate";
 
 const groups = [
   {
@@ -13,4 +12,7 @@ const groups = [
   },
 ];
 
-module.exports = { type, groups };
+export default defineMigration({
+  type: "create-component-group",
+  groups,
+});

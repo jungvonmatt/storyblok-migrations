@@ -1,5 +1,4 @@
-/* eslint-disable no-undef */
-const type = "create-datasource";
+import { defineMigration } from "sb-migrate";
 
 const datasource = {
   name: "Headline Weight",
@@ -13,4 +12,8 @@ const entries = [
   { name: "Bold", value: "bold" },
 ];
 
-module.exports = { type, datasource, entries };
+export default defineMigration({
+  type: "create-datasource",
+  datasource,
+  entries,
+});

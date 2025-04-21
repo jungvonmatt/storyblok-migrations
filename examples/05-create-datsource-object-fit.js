@@ -1,5 +1,4 @@
-/* eslint-disable no-undef */
-const type = "create-datasource";
+import { defineMigration } from "sb-migrate";
 
 const datasource = {
   name: "Object Fit",
@@ -14,4 +13,8 @@ const entries = [
   { name: "None", value: "none" },
 ];
 
-module.exports = { type, datasource, entries };
+export default defineMigration({
+  type: "create-datasource",
+  datasource,
+  entries,
+});
