@@ -53,8 +53,8 @@ export default defineMigration({
     },
 
     tabs: {
-      general: ["body"],
-      settings: ["id", "margin_top"],
+      General: ["body"],
+      Settings: ["id", "margin_top", "margin_bottom"],
     },
   },
 });
