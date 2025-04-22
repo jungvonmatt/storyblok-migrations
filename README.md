@@ -222,6 +222,69 @@ The following migration types are supported:
 - `delete-story` - Delete a content entry
 - `transform-entries` - Apply transformations to all entries using a specific component and a transform function.
 
+### Schema Helper Functions
+
+When creating or updating components, the following helper functions are available to create type-safe schema fields:
+
+- `textField()` - Creates a Text input field for short strings
+- `textareaField()` - Creates a Textarea input field for longer strings
+- `bloksField()` - Creates a Blocks field for nested blocks
+- `richtextField()` - Creates a Rich text field with formatting options
+- `markdownField()` - Creates a Markdown text field
+- `numberField()` - Creates a number input field
+- `datetimeField()` - Creates a date and time input field
+- `booleanField()` - Creates a boolean input field
+- `optionsField()` - Creates a multiple options select dropdown field
+- `optionField()` - Creates a single option select dropdown field
+- `assetField()` - Creates an asset field for files
+- `multiassetField()` - Creates a multi-asset field for multiple files
+- `multilinkField()` - Creates a link field
+- `tableField()` - Creates a simple table editor
+- `sectionField()` - Creates a section field to group fields
+- `customField()` - Creates an extendable, customizable input
+- `tabField()` - Creates tabs for the component
+
+Example usage in a migration:
+
+```typescript
+import {
+  defineMigration,
+  textField,
+  richtextField,
+  booleanField,
+} from "sb-migrate";
+
+export default defineMigration({
+  type: "create-component",
+  schema: {
+    name: "feature-card",
+    display_name: "Feature Card",
+    is_root: false,
+    is_nestable: true,
+    component_group_name: "Content",
+    schema: {
+      title: textField({
+        display_name: "Title",
+        required: true,
+        pos: 0,
+      }),
+      content: richtextField({
+        display_name: "Content",
+        translatable: true,
+        pos: 1,
+      }),
+      is_featured: booleanField({
+        display_name: "Is Featured",
+        default_value: false,
+        pos: 2,
+      }),
+    },
+  },
+});
+```
+
+These helper functions provide proper TypeScript typing, validation, and documentation for each field type.
+
 ### Content Migration Example
 
 The most powerful way to perform content migrations is using the `transform-entries` type:

@@ -1,5 +1,4 @@
-/* eslint-disable no-undef */
-const type = "create-datasource";
+import { defineMigration } from "sb-migrate";
 
 const datasource = {
   name: "Margin",
@@ -14,4 +13,8 @@ const entries = [
   { name: "Extra Large", value: "xl" },
 ];
 
-module.exports = { type, datasource, entries };
+export default defineMigration({
+  type: "create-datasource",
+  datasource,
+  entries,
+});

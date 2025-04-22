@@ -1,9 +1,8 @@
-/* eslint-disable no-undef */
-const type = "create-datasource";
+import { defineMigration } from "sb-migrate";
 
 const datasource = {
-  name: "Headline Tag",
-  slug: "headline-tag",
+  name: "Headline Look",
+  slug: "headline-look",
 };
 
 const entries = [
@@ -12,7 +11,10 @@ const entries = [
   { name: "H3", value: "h3" },
   { name: "H4", value: "h4" },
   { name: "H5", value: "h5" },
-  { name: "H6", value: "h6" },
 ];
 
-module.exports = { type, datasource, entries };
+export default defineMigration({
+  type: "create-datasource",
+  datasource,
+  entries,
+});
