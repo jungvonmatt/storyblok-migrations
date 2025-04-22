@@ -1,4 +1,9 @@
-import { defineMigration } from "sb-migrate";
+import {
+  defineMigration,
+  textField,
+  booleanField,
+  optionField,
+} from "sb-migrate";
 
 export default defineMigration({
   type: "create-component",
@@ -10,39 +15,35 @@ export default defineMigration({
     component_group_name: "Contents",
 
     schema: {
-      text: {
-        type: "text",
+      text: textField({
         display_name: "Link Text",
         translatable: true,
         required: true,
-      },
-      url: {
-        type: "text",
+      }),
+      url: textField({
         display_name: "URL",
         required: true,
         translatable: true,
         description: "External URL or internal path",
-      },
-      target_blank: {
-        type: "boolean",
+      }),
+      target_blank: booleanField({
         display_name: "Open in new tab",
-      },
-      appearance: {
-        type: "option",
+      }),
+      appearance: optionField({
         display_name: "Appearance",
+        source: "self",
         options: [
           { value: "text", name: "Text Link" },
           { value: "button", name: "Button" },
           { value: "button-outline", name: "Button Outline" },
         ],
         default_value: "text",
-      },
-      id: {
-        type: "text",
+      }),
+      id: textField({
         display_name: "ID",
         regex: "^([a-zA-Z]+(?:[a-zA-Z0-9\\-_.:]+)*)*$",
         description: "ID attribute (must start with letter)",
-      },
+      }),
     },
 
     tabs: {

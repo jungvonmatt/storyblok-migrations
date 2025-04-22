@@ -1,4 +1,9 @@
-import { defineMigration } from "sb-migrate";
+import {
+  defineMigration,
+  textField,
+  optionField,
+  customField,
+} from "sb-migrate";
 
 export default defineMigration({
   type: "create-component",
@@ -9,39 +14,34 @@ export default defineMigration({
     is_nestable: true,
     component_group_name: "Contents",
     schema: {
-      text: {
-        type: "text",
+      text: textField({
         display_name: "Headline Text",
         translatable: true,
         required: true,
-      },
-      look: {
-        type: "option",
+      }),
+      look: optionField({
         display_name: "Appearance",
         source: "internal",
         datasource_slug: "headline-look",
         default_value: "h1",
-      },
-      tag: {
-        type: "option",
+      }),
+      tag: optionField({
         display_name: "HTML Tag",
         source: "internal",
         datasource_slug: "headline-tag",
         default_value: "h2",
-      },
-      weight: {
-        type: "option",
+      }),
+      weight: optionField({
         display_name: "Font Weight",
         source: "internal",
         datasource_slug: "headline-weight",
         default_value: "semibold",
-      },
-      color: {
-        type: "custom",
+      }),
+      color: customField({
         field_type: "storyblok-colorpicker",
         display_name: "Text Color",
         options: [],
-      },
+      }),
     },
     tabs: {
       general: ["text"],

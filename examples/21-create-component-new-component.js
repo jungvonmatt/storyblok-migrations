@@ -1,4 +1,4 @@
-import { defineMigration } from "sb-migrate";
+import { defineMigration, textField } from "sb-migrate";
 
 export default defineMigration({
   type: "create-component",
@@ -9,14 +9,12 @@ export default defineMigration({
     is_nestable: true,
     component_group_name: "Content",
     schema: {
-      title: {
-        type: "text",
+      title: textField({
         pos: 0,
-      },
-      subtitle: {
-        type: "text",
+      }),
+      subtitle: textField({
         pos: 1,
-      },
+      }),
     },
     tabs: {
       general: ["title", "subtitle"],
