@@ -1,6 +1,6 @@
-# Storyblok Migrations
+# Sb Migrate
 
-Storyblok Migrations offers additional functionality on top of the existing Storyblok CLI. It helps developers manage Storyblok components, generate TypeScript types, and handle configuration across projects. The main features are:
+Sb Migrate offers additional functionality on top of the existing Storyblok CLI. It helps developers manage Storyblok components, generate TypeScript types, and handle configuration across projects. The main features are:
 
 - Configure Storyblok credentials (Space ID and OAuth token)
 - Login to Storyblok
@@ -165,14 +165,14 @@ Options:
 
 ## Using Migrations
 
-Storyblok Migrations provides a type-safe way to define migrations using the `defineMigration` function.
+Sb Migrate provides a type-safe way to define migrations using the `defineMigration` function.
 
 ### Type-Safe Migrations
 
 The `defineMigration` function provides full TypeScript support for creating any type of migration:
 
 ```typescript
-import { defineMigration } from "sb-migrate";
+import { defineMigration, textField } from "sb-migrate";
 
 export default defineMigration({
   type: "create-component",
@@ -183,14 +183,12 @@ export default defineMigration({
     is_nestable: true,
     component_group_name: "Content",
     schema: {
-      title: {
-        type: "text",
+      title: textField({
         pos: 0,
-      },
-      subtitle: {
-        type: "text",
+      }),
+      subtitle: textField({
         pos: 1,
-      },
+      }),
     },
     tabs: {
       general: ["title", "subtitle"],
@@ -224,7 +222,7 @@ The following migration types are supported:
 
 ### Schema Helper Functions
 
-When creating or updating components, the following helper functions are available to create type-safe schema fields:
+When creating or updating components with `create-component` or `update-component`, the following helper functions are available to create type-safe schema fields:
 
 - `textField()` - Creates a Text input field for short strings
 - `textareaField()` - Creates a Textarea input field for longer strings
