@@ -1,5 +1,6 @@
 import { MigrationFn } from "../utils/migration";
 import { IComponentSchemaItem } from "./IComponent";
+import { IPendingDataSourceEntry } from "./IDataSource";
 import { IStoryContent } from "./stories";
 
 export type MigrationType =
@@ -85,7 +86,7 @@ export interface UpdateComponentGroupMigration extends BaseMigration {
 
 export interface DeleteComponentGroupMigration extends BaseMigration {
   type: "delete-component-group";
-  id: number;
+  id: number | string;
 }
 
 // Component Migrations
@@ -96,7 +97,6 @@ export interface CreateComponentMigration extends BaseMigration {
 
 export interface UpdateComponentMigration extends BaseMigration {
   type: "update-component";
-  name: string;
   schema: Partial<ComponentMigration>;
 }
 
@@ -113,25 +113,27 @@ export interface CreateStoryMigration extends BaseMigration {
 
 export interface UpdateStoryMigration extends BaseMigration {
   type: "update-story";
-  id: number;
+  id: number | string;
   story: Partial<StoryMigration>;
 }
 
 export interface DeleteStoryMigration extends BaseMigration {
   type: "delete-story";
-  id: number;
+  id: number | string;
 }
 
 // Datasource Migrations
 export interface CreateDatasourceMigration extends BaseMigration {
   type: "create-datasource";
   datasource: DatasourceMigration;
+  entries?: Omit<IPendingDataSourceEntry, "datasource_id">[];
 }
 
 export interface UpdateDatasourceMigration extends BaseMigration {
   type: "update-datasource";
   id: number | string;
   datasource: Partial<DatasourceMigration>;
+  entries?: Omit<IPendingDataSourceEntry, "datasource_id">[];
 }
 
 export interface DeleteDatasourceMigration extends BaseMigration {
