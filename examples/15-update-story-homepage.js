@@ -5,6 +5,7 @@ export default defineMigration({
   id: "home",
   story: {
     content: {
+      component: "page",
       body: [
         {
           component: "headline",
