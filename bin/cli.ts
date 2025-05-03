@@ -62,6 +62,12 @@ program
     "Languages to publish (default: ALL_LANGUAGES)",
     "ALL_LANGUAGES",
   )
+  .option(
+    "--throttle <ms>",
+    "Add delay between API requests to avoid rate limiting (in milliseconds)",
+    (value) => parseInt(value, 10),
+    0,
+  )
   .action((filePath, options) => run(filePath, options));
 
 program.parse();

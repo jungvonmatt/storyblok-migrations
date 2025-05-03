@@ -162,6 +162,7 @@ Options:
 - `-t, --token <token>`: Storyblok OAuth token (overrides config)
 - `-p, --publish <mode>`: Publish mode (all, published, published-with-changes)
 - `-l, --languages <langs>`: Languages to publish (default: ALL_LANGUAGES)
+- `--throttle <ms>`: Add delay between API requests to avoid rate limiting (in milliseconds). Default is 3 requests per second (333ms between requests).
 
 ## Using Migrations
 

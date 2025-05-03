@@ -3,7 +3,12 @@ import fs from "fs";
 import path from "path";
 import pc from "picocolors";
 import { Component, helper, RunMigrationOptions } from "../utils/migration";
-import { api, UpdateStoryPayload, CreateStoryPayload } from "../utils/api";
+import {
+  api,
+  UpdateStoryPayload,
+  CreateStoryPayload,
+  setRequestsPerSecond,
+} from "../utils/api";
 import { addOrUpdateDatasource } from "../utils/storyblok";
 import {
   ComponentGroupMigration,
@@ -55,6 +60,20 @@ export function defineMigration<T extends MigrationType>(
 
 export async function run(filePath: string, options: RunOptions = {}) {
   try {
+    // Apply rate limiting if provided
+    if (options.throttle && options.throttle > 0) {
+      // Convert throttle milliseconds to requests per second
+      // e.g., 500ms throttle = 2 requests per second
+      const requestsPerSecond = 1000 / options.throttle;
+      console.log(
+        `${pc.blue("-")} Setting API rate limit to ${requestsPerSecond.toFixed(2)} requests per second (${options.throttle}ms between requests)`,
+      );
+      setRequestsPerSecond(requestsPerSecond);
+    } else {
+      // Default to a safe rate limit of 3 requests per second
+      setRequestsPerSecond(3);
+    }
+
     // Resolve and load the migration file
     const resolvedPath = path.resolve(process.cwd(), filePath);
     console.log(`${pc.blue("-")} Loading migration from ${resolvedPath}`);

@@ -14,6 +14,89 @@ import {
   IComponentGroup,
   IPendingComponentGroup,
 } from "../types/IComponentGroup";
+
+// Queue for handling API requests with rate limiting
+class RequestQueue {
+  private queue: Array<() => Promise<any>> = [];
+  private processing = false;
+  private interval: number;
+  private lastRequestTime = 0;
+
+  constructor(requestsPerSecond = 3) {
+    // Default to 3 requests per second, which is conservative and safe
+    this.interval = Math.floor(1000 / requestsPerSecond);
+  }
+
+  setRequestsPerSecond(requestsPerSecond: number) {
+    if (requestsPerSecond <= 0) return;
+    this.interval = Math.floor(1000 / requestsPerSecond);
+    console.log(
+      `Rate limit set to ${requestsPerSecond} requests per second (${this.interval}ms between requests)`,
+    );
+  }
+
+  async add<T>(fn: () => Promise<T>): Promise<T> {
+    return new Promise((resolve, reject) => {
+      this.queue.push(async () => {
+        try {
+          const result = await fn();
+          resolve(result);
+          return result;
+        } catch (error) {
+          reject(error);
+          throw error;
+        }
+      });
+
+      if (!this.processing) {
+        this.processQueue();
+      }
+    });
+  }
+
+  private async processQueue() {
+    if (this.processing || this.queue.length === 0) return;
+
+    this.processing = true;
+
+    while (this.queue.length > 0) {
+      const now = Date.now();
+      const timeSinceLastRequest = now - this.lastRequestTime;
+
+      // Wait if needed to respect the rate limit
+      if (timeSinceLastRequest < this.interval) {
+        const waitTime = this.interval - timeSinceLastRequest;
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
+      }
+
+      // Execute the next request
+      const request = this.queue.shift();
+      if (request) {
+        this.lastRequestTime = Date.now();
+        try {
+          await request();
+        } catch (error) {
+          // Just log the error but continue processing the queue
+          console.error("Error processing request:", error);
+        }
+      }
+    }
+
+    this.processing = false;
+  }
+}
+
+// Global request queue instance
+const requestQueue = new RequestQueue();
+
+/**
+ * Sets the number of requests per second to limit API calls
+ * @param requestsPerSecond Number of requests per second (default: 3)
+ */
+export function setRequestsPerSecond(requestsPerSecond: number): void {
+  requestQueue.setRequestsPerSecond(requestsPerSecond);
+}
+
 /**
  * Creates a new instance of the Storyblok client using configuration from either
  * the config file (.storyblokrc.json) or environment variables.
@@ -88,11 +171,14 @@ const pagedGet = async (
   const { url, page = 1, perPage = 100, options = {} } = params;
   let aggregatedResponse = params?.aggregatedResponse;
 
-  const response = await client.get(url, {
-    ...options,
-    page,
-    per_page: Math.max(100, perPage),
-  });
+  // Use the request queue to throttle requests
+  const response = await requestQueue.add(() =>
+    client.get(url, {
+      ...options,
+      page,
+      per_page: Math.min(100, perPage), // Ensure we don't exceed max of 100
+    }),
+  );
 
   if (aggregatedResponse) {
     aggregatedResponse.data = {
@@ -156,6 +242,7 @@ const wrapRequest = async <T = any>(
 ): Promise<IResult<T>> => {
   const client = await getStoryblokClient();
   const config = await loadConfig();
+
   if (method === "get") {
     const response = await pagedGet(client, {
       url: `spaces/${config?.spaceId}/${path}`,
@@ -165,9 +252,9 @@ const wrapRequest = async <T = any>(
     return response as IResult<T>;
   }
 
-  const response = await client[method](
-    `spaces/${config?.spaceId}/${path}`,
-    params,
+  // For non-GET requests, use the request queue
+  const response = await requestQueue.add(() =>
+    client[method](`spaces/${config?.spaceId}/${path}`, params),
   );
 
   return response as unknown as IResult<T>;
