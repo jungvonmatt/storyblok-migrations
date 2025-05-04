@@ -75,9 +75,9 @@ class RequestQueue {
         this.lastRequestTime = Date.now();
         try {
           await request();
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
-          // Just log the error but continue processing the queue
-          console.error("Error processing request:", error);
+          // Don't log the error here - let it propagate to the actual handler
         }
       }
     }

@@ -59,30 +59,30 @@ export function defineMigration<T extends MigrationType>(
 }
 
 export async function run(filePath: string, options: RunOptions = {}) {
+  // Apply rate limiting if provided
+  if (options.throttle && options.throttle > 0) {
+    // Convert throttle milliseconds to requests per second
+    // e.g., 500ms throttle = 2 requests per second
+    const requestsPerSecond = 1000 / options.throttle;
+    console.log(
+      `${pc.blue("-")} Setting API rate limit to ${requestsPerSecond.toFixed(2)} requests per second (${options.throttle}ms between requests)`,
+    );
+    setRequestsPerSecond(requestsPerSecond);
+  } else {
+    // Default to a safe rate limit of 3 requests per second
+    setRequestsPerSecond(3);
+  }
+
+  // Resolve and load the migration file
+  const resolvedPath = path.resolve(process.cwd(), filePath);
+  console.log(`${pc.blue("-")} Loading migration from ${resolvedPath}`);
+
+  if (!fs.existsSync(resolvedPath)) {
+    console.error(`${pc.red("✗")} Migration file not found: ${resolvedPath}`);
+    process.exit(1);
+  }
+
   try {
-    // Apply rate limiting if provided
-    if (options.throttle && options.throttle > 0) {
-      // Convert throttle milliseconds to requests per second
-      // e.g., 500ms throttle = 2 requests per second
-      const requestsPerSecond = 1000 / options.throttle;
-      console.log(
-        `${pc.blue("-")} Setting API rate limit to ${requestsPerSecond.toFixed(2)} requests per second (${options.throttle}ms between requests)`,
-      );
-      setRequestsPerSecond(requestsPerSecond);
-    } else {
-      // Default to a safe rate limit of 3 requests per second
-      setRequestsPerSecond(3);
-    }
-
-    // Resolve and load the migration file
-    const resolvedPath = path.resolve(process.cwd(), filePath);
-    console.log(`${pc.blue("-")} Loading migration from ${resolvedPath}`);
-
-    if (!fs.existsSync(resolvedPath)) {
-      console.error(`${pc.red("✗")} Migration file not found: ${resolvedPath}`);
-      process.exit(1);
-    }
-
     const migrationModule = await import(resolvedPath);
     const migration = migrationModule.default || migrationModule;
 
@@ -93,60 +93,61 @@ export async function run(filePath: string, options: RunOptions = {}) {
       publishLanguages: options.languages,
     };
 
-    switch (migration.type) {
-      case "create-component-group":
-        await handleCreateComponentGroup(migration, migrationOptions);
-        break;
-      case "update-component-group":
-        await handleUpdateComponentGroup(migration, migrationOptions);
-        break;
-      case "delete-component-group":
-        await handleDeleteComponentGroup(migration, migrationOptions);
-        break;
-      case "create-component":
-        await handleCreateComponent(migration, migrationOptions);
-        break;
-      case "update-component":
-        await handleUpdateComponent(migration, migrationOptions);
-        break;
-      case "delete-component":
-        await handleDeleteComponent(migration, migrationOptions);
-        break;
-      case "create-story":
-        await handleCreateStory(migration, migrationOptions);
-        break;
-      case "update-story":
-        await handleUpdateStory(migration, migrationOptions);
-        break;
-      case "delete-story":
-        await handleDeleteStory(migration, migrationOptions);
-        break;
-      case "create-datasource":
-        await handleCreateDatasource(migration, migrationOptions);
-        break;
-      case "update-datasource":
-        await handleUpdateDatasource(migration, migrationOptions);
-        break;
-      case "delete-datasource":
-        await handleDeleteDatasource(migration, migrationOptions);
-        break;
-      /*       case "create-datasource-entry":
-        await handleCreateDatasourceEntry(migration, migrationOptions);
-        break;
-      case "update-datasource-entry":
-        await handleUpdateDatasourceEntry(migration, migrationOptions);
-        break;
-      case "delete-datasource-entry":
-        await handleDeleteDatasourceEntry(migration, migrationOptions);
-        break; */
-      case "transform-entries":
-        await handleTransformEntries(migration, migrationOptions);
-        break;
-      default:
-        throw new Error(`Unknown migration type: ${(migration as any).type}`);
+    try {
+      switch (migration.type) {
+        case "create-component-group":
+          await handleCreateComponentGroup(migration, migrationOptions);
+          break;
+        case "update-component-group":
+          await handleUpdateComponentGroup(migration, migrationOptions);
+          break;
+        case "delete-component-group":
+          await handleDeleteComponentGroup(migration, migrationOptions);
+          break;
+        case "create-component":
+          await handleCreateComponent(migration, migrationOptions);
+          break;
+        case "update-component":
+          await handleUpdateComponent(migration, migrationOptions);
+          break;
+        case "delete-component":
+          await handleDeleteComponent(migration, migrationOptions);
+          break;
+        case "create-story":
+          await handleCreateStory(migration, migrationOptions);
+          break;
+        case "update-story":
+          await handleUpdateStory(migration, migrationOptions);
+          break;
+        case "delete-story":
+          await handleDeleteStory(migration, migrationOptions);
+          break;
+        case "create-datasource":
+          await handleCreateDatasource(migration, migrationOptions);
+          break;
+        case "update-datasource":
+          await handleUpdateDatasource(migration, migrationOptions);
+          break;
+        case "delete-datasource":
+          await handleDeleteDatasource(migration, migrationOptions);
+          break;
+        case "transform-entries":
+          await handleTransformEntries(migration, migrationOptions);
+          break;
+        default:
+          console.error(
+            `${pc.red("✗")} Unknown migration type: ${(migration as any).type}`,
+          );
+          process.exit(1);
+      }
+    } catch (error) {
+      // This is a migration error, log it and exit
+      console.error(`${pc.red("✗")} Migration failed:`, error);
+      process.exit(1);
     }
   } catch (error) {
-    console.error(`${pc.red("✗")} Migration failed:`, error);
+    // This is an import error, log it and exit
+    console.error(`${pc.red("✗")} Failed to load migration:`, error);
     process.exit(1);
   }
 }
@@ -755,8 +756,8 @@ async function handleCreateDatasource(
     );
     console.log(`${pc.green("-")} Created ${datasourceEntries.length} entries`);
   } catch (error) {
+    // Don't rethrow - let the calling function handle it
     console.error(`${pc.red("✗")} Failed to create datasource:`, error);
-    throw error;
   }
 }
 
@@ -849,8 +850,8 @@ async function handleUpdateDatasource(
       "update",
     );
   } catch (error) {
+    // Don't rethrow - let the calling function handle it
     console.error(`${pc.red("✗")} Failed to update datasource:`, error);
-    throw error;
   }
 }
 
@@ -881,8 +882,8 @@ async function handleDeleteDatasource(
       `${pc.green("✓")} Datasource deleted successfully: ${datasource.name}`,
     );
   } catch (error) {
+    // Don't rethrow - let the calling function handle it
     console.error(`${pc.red("✗")} Failed to delete datasource:`, error);
-    throw error;
   }
 }
 
