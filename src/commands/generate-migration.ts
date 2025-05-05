@@ -3,8 +3,7 @@ import pc from "picocolors";
 import fs from "fs";
 import path from "path";
 import { template } from "lodash";
-
-type MigrationType = "schema" | "content";
+import { MigrationType } from "../types/migration";
 
 interface GenerateMigrationOptions {
   type?: string;
@@ -12,36 +11,75 @@ interface GenerateMigrationOptions {
 }
 
 export async function generateMigration(
-  options: GenerateMigrationOptions = {}
+  options: GenerateMigrationOptions = {},
 ) {
   try {
-    // Get migration type from options or prompt
     let migrationType: MigrationType | undefined = undefined;
 
-    // Validate type if provided
+    // Define migration type groups
+    const schemaTypes: Array<{ value: MigrationType; name: string }> = [
+      { value: "create-component-group", name: "Create Component Group" },
+      { value: "update-component-group", name: "Update Component Group" },
+      { value: "delete-component-group", name: "Delete Component Group" },
+      { value: "create-component", name: "Create Component" },
+      { value: "update-component", name: "Update Component" },
+      { value: "delete-component", name: "Delete Component" },
+    ];
+
+    const contentTypes: Array<{ value: MigrationType; name: string }> = [
+      { value: "create-story", name: "Create Story" },
+      { value: "update-story", name: "Update Story" },
+      { value: "delete-story", name: "Delete Story" },
+      { value: "transform-entries", name: "Transform Entries" },
+    ];
+
+    const datasourceTypes: Array<{ value: MigrationType; name: string }> = [
+      { value: "create-datasource", name: "Create Datasource" },
+      { value: "update-datasource", name: "Update Datasource" },
+      { value: "delete-datasource", name: "Delete Datasource" },
+    ];
+
     if (options.type) {
-      if (options.type !== "schema" && options.type !== "content") {
+      const allTypes = [
+        ...schemaTypes.map((t) => t.value),
+        ...contentTypes.map((t) => t.value),
+        ...datasourceTypes.map((t) => t.value),
+      ];
+
+      if (!allTypes.includes(options.type as MigrationType)) {
         console.error(pc.red(`✗ Invalid migration type: ${options.type}`));
         console.error(
-          pc.yellow(`Migration type must be either 'schema' or 'content'`)
+          pc.yellow(`Valid migration types: ${allTypes.join(", ")}`),
         );
         process.exit(1);
       }
+
       migrationType = options.type as MigrationType;
     }
 
-    // Prompt for type if not provided or invalid
     if (!migrationType) {
-      migrationType = await select<MigrationType>({
-        message: "What type of migration do you want to create?",
+      const categoryChoice = await select({
+        message: "What category of migration do you want to create?",
         choices: [
           { value: "schema", name: "Schema Migration (component structure)" },
           { value: "content", name: "Content Migration (content entries)" },
+          { value: "datasource", name: "Datasource Migration" },
         ],
+      });
+
+      const typeChoices =
+        categoryChoice === "schema"
+          ? schemaTypes
+          : categoryChoice === "content"
+            ? contentTypes
+            : datasourceTypes;
+
+      migrationType = await select<MigrationType>({
+        message: `Select the type of ${categoryChoice} migration:`,
+        choices: typeChoices,
       });
     }
 
-    // Get migration name from options or prompt
     let migrationName = options.name;
     if (!migrationName) {
       migrationName = await input({
@@ -55,39 +93,35 @@ export async function generateMigration(
       });
     }
 
-    // Create timestamp
     const timestamp = new Date()
       .toISOString()
       .replace(/[-:T.]/g, "")
       .slice(0, 14);
-    const fileName = `${timestamp}-${migrationName}.ts`;
+    const fileName = `${timestamp}-${migrationName}.js`;
+
+    // Determine the category from the migration type
+    const getCategory = (type: MigrationType): string => {
+      if (schemaTypes.map((t) => t.value).includes(type)) return "schema";
+      if (contentTypes.map((t) => t.value).includes(type)) return "content";
+      return "datasource";
+    };
+
+    const category = getCategory(migrationType);
 
     // Create directory if it doesn't exist
-    const migrationsDir = path.join(process.cwd(), "migrations", migrationType);
+    const migrationsDir = path.join(process.cwd(), "migrations", category);
     if (!fs.existsSync(migrationsDir)) {
       fs.mkdirSync(migrationsDir, { recursive: true });
     }
 
     const filePath = path.join(migrationsDir, fileName);
 
-    // Read template based on migration type
-    // Try different paths to find the template file
+    // Get template for the specific migration type
+    const templateFilename = `${migrationType}.js`;
+
     const templatePaths = [
-      // Try local development path first
-      path.join(
-        process.cwd(),
-        "src",
-        "templates",
-        `${migrationType}-migration.ts`
-      ),
-      // Then try the dist/templates directory (for production)
-      path.join(
-        process.cwd(),
-        "dist",
-        "templates",
-        `${migrationType}-migration.ts`
-      ),
-      // Then try relative to the current file (when installed as a package)
+      path.join(process.cwd(), "src", "templates", templateFilename),
+      path.join(process.cwd(), "dist", "templates", templateFilename),
       path.join(
         __dirname,
         "..",
@@ -95,13 +129,23 @@ export async function generateMigration(
         "..",
         "src",
         "templates",
-        `${migrationType}-migration.ts`
+        templateFilename,
       ),
-      // Finally try a path relative to the compiled file
-      path.join(__dirname, "..", "templates", `${migrationType}-migration.ts`),
+      path.join(__dirname, "..", "templates", templateFilename),
+      path.join(process.cwd(), "src", "templates", `${category}-migration.js`),
+      path.join(process.cwd(), "dist", "templates", `${category}-migration.js`),
+      path.join(
+        __dirname,
+        "..",
+        "..",
+        "..",
+        "src",
+        "templates",
+        `${category}-migration.js`,
+      ),
+      path.join(__dirname, "..", "templates", `${category}-migration.js`),
     ];
 
-    // Try each path until we find one that works
     let templateContent = null;
     for (const templatePath of templatePaths) {
       try {
@@ -109,28 +153,26 @@ export async function generateMigration(
           templateContent = fs.readFileSync(templatePath, "utf8");
           break;
         }
-      } catch (err) {
+      } catch {
         // Continue to the next path
-        console.error(pc.red(`✗ Failed to read template file: ${err}`));
       }
     }
 
     if (!templateContent) {
       throw new Error(
-        `Could not find template file for ${migrationType} migration`
+        `Could not find template file for ${migrationType} migration`,
       );
     }
 
-    // Use lodash template to replace placeholders
     const compile = template(templateContent, {
       interpolate: /{{([\s\S]+?)}}/g,
     });
 
     const finalTemplate = compile({
       migrationName,
+      migrationType,
     });
 
-    // Write file
     fs.writeFileSync(filePath, finalTemplate);
 
     console.log(pc.green(`✓ Migration created at ${filePath}`));

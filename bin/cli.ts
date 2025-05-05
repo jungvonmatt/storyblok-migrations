@@ -38,11 +38,10 @@ program
 program
   .command("generate-migration")
   .description("Generate a migration file for a schema or content migration")
-  .option("-t,--type <TYPE>", "Type of migration ('schema' or 'content')")
+  .option("-t,--type <TYPE>", "Type of migration (e.g. 'create-component')")
   .option("-n, --name <NAME>", "Name of the migration")
   .action((options) => generateMigration(options));
 
-// TODO: improve the run command so that it can run also all migrations in the migrations/schema folder
 // TODO: add a command to run all migrations in the migrations/schema folder
 // TODO: add the possibility to run a single migration file with a specific name and not the full path as argument
 program
