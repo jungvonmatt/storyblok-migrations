@@ -15,7 +15,7 @@ import {
   IPendingComponentGroup,
 } from "../types/IComponentGroup";
 
-// Create a request queue using a functional approach with closures
+// Helper function to create a request queue with rate limiting
 const createRequestQueue = (initialRequestsPerSecond = 3) => {
   const queue: Array<() => Promise<any>> = [];
   let processing = false;

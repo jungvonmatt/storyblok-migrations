@@ -16,9 +16,6 @@ export type MigrationType =
   | "create-datasource"
   | "update-datasource"
   | "delete-datasource"
-  | "create-datasource-entry"
-  | "update-datasource-entry"
-  | "delete-datasource-entry"
   | "transform-entries";
 
 export type ComponentGroupMigration = {
@@ -81,7 +78,7 @@ export interface CreateComponentGroupMigration extends BaseMigration {
 
 export interface UpdateComponentGroupMigration extends BaseMigration {
   type: "update-component-group";
-  id: number;
+  id: number | string;
   group: ComponentGroupMigration;
 }
 
@@ -141,26 +138,6 @@ export interface DeleteDatasourceMigration extends BaseMigration {
   type: "delete-datasource";
   id: number | string;
 }
-
-// TODO: Evaluate if we need to handle create, update and delete of datasource entries
-// as they are handled in the datasource migration already.
-
-// Datasource Entry Migrations
-/* export interface CreateDatasourceEntryMigration extends BaseMigration {
-  type: "create-datasource-entry";
-  entry: DatasourceEntryMigration;
-}
-
-export interface UpdateDatasourceEntryMigration extends BaseMigration {
-  type: "update-datasource-entry";
-  id: number | string;
-  entry: Partial<DatasourceEntryMigration>;
-}
-
-export interface DeleteDatasourceEntryMigration extends BaseMigration {
-  type: "delete-datasource-entry";
-  id: number | string;
-} */
 
 // Transform Entries Migration
 export interface TransformEntriesMigration extends BaseMigration {

@@ -12,7 +12,7 @@ export default defineMigration({
     display_name: "Headline",
     is_root: false,
     is_nestable: true,
-    component_group_name: "Contents",
+    component_group_name: "Content",
     schema: {
       text: textField({
         translatable: true,

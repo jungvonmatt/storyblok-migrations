@@ -142,7 +142,7 @@ This command will:
 
 Options:
 
-- `-t, --type`: Type of migration (schema or content)
+- `-t, --type`: Type of migration. See [Migration Types](#migration-types) for more information.
 - `-n, --name`: Name of the migration
 
 Schema migrations are used to modify component structures, while content migrations are used to update content entries.
