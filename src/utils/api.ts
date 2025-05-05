@@ -14,6 +14,89 @@ import {
   IComponentGroup,
   IPendingComponentGroup,
 } from "../types/IComponentGroup";
+
+// Create a request queue using a functional approach with closures
+const createRequestQueue = (initialRequestsPerSecond = 3) => {
+  const queue: Array<() => Promise<any>> = [];
+  let processing = false;
+  let interval = Math.floor(1000 / initialRequestsPerSecond);
+  let lastRequestTime = 0;
+
+  const setRequestsPerSecond = (requestsPerSecond: number): void => {
+    if (requestsPerSecond <= 0) return;
+    interval = Math.floor(1000 / requestsPerSecond);
+    console.log(
+      `Rate limit set to ${requestsPerSecond} requests per second (${interval}ms between requests)`,
+    );
+  };
+
+  const processQueue = async (): Promise<void> => {
+    if (processing || queue.length === 0) return;
+
+    processing = true;
+
+    while (queue.length > 0) {
+      const now = Date.now();
+      const timeSinceLastRequest = now - lastRequestTime;
+
+      // Wait if needed to respect the rate limit
+      if (timeSinceLastRequest < interval) {
+        const waitTime = interval - timeSinceLastRequest;
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
+      }
+
+      // Execute the next request
+      const request = queue.shift();
+      if (request) {
+        lastRequestTime = Date.now();
+        try {
+          await request();
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
+          // Don't log the error here - let it propagate to the actual handler
+        }
+      }
+    }
+
+    processing = false;
+  };
+
+  const add = async <T>(fn: () => Promise<T>): Promise<T> => {
+    return new Promise((resolve, reject) => {
+      queue.push(async () => {
+        try {
+          const result = await fn();
+          resolve(result);
+          return result;
+        } catch (error) {
+          reject(error);
+          throw error;
+        }
+      });
+
+      if (!processing) {
+        processQueue();
+      }
+    });
+  };
+
+  return {
+    add,
+    setRequestsPerSecond,
+  };
+};
+
+// Create a global request queue instance
+const requestQueue = createRequestQueue();
+
+/**
+ * Sets the number of requests per second to limit API calls
+ * @param requestsPerSecond Number of requests per second (default: 3)
+ */
+export function setRequestsPerSecond(requestsPerSecond: number): void {
+  requestQueue.setRequestsPerSecond(requestsPerSecond);
+}
+
 /**
  * Creates a new instance of the Storyblok client using configuration from either
  * the config file (.storyblokrc.json) or environment variables.
@@ -88,11 +171,14 @@ const pagedGet = async (
   const { url, page = 1, perPage = 100, options = {} } = params;
   let aggregatedResponse = params?.aggregatedResponse;
 
-  const response = await client.get(url, {
-    ...options,
-    page,
-    per_page: Math.max(100, perPage),
-  });
+  // Use the request queue to throttle requests
+  const response = await requestQueue.add(() =>
+    client.get(url, {
+      ...options,
+      page,
+      per_page: Math.min(100, perPage), // Ensure we don't exceed max of 100
+    }),
+  );
 
   if (aggregatedResponse) {
     aggregatedResponse.data = {
@@ -156,6 +242,7 @@ const wrapRequest = async <T = any>(
 ): Promise<IResult<T>> => {
   const client = await getStoryblokClient();
   const config = await loadConfig();
+
   if (method === "get") {
     const response = await pagedGet(client, {
       url: `spaces/${config?.spaceId}/${path}`,
@@ -165,9 +252,9 @@ const wrapRequest = async <T = any>(
     return response as IResult<T>;
   }
 
-  const response = await client[method](
-    `spaces/${config?.spaceId}/${path}`,
-    params,
+  // For non-GET requests, use the request queue
+  const response = await requestQueue.add(() =>
+    client[method](`spaces/${config?.spaceId}/${path}`, params),
   );
 
   return response as unknown as IResult<T>;

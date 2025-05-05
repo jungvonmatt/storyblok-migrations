@@ -64,6 +64,7 @@ export interface RunOptions {
   token?: string;
   publish?: "all" | "published" | "published-with-changes";
   languages?: string;
+  throttle?: number; // Delay in milliseconds between API requests
 }
 
 // Base migration interface
