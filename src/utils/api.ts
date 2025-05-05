@@ -15,29 +15,55 @@ import {
   IPendingComponentGroup,
 } from "../types/IComponentGroup";
 
-// Queue for handling API requests with rate limiting
-class RequestQueue {
-  private queue: Array<() => Promise<any>> = [];
-  private processing = false;
-  private interval: number;
-  private lastRequestTime = 0;
+// Create a request queue using a functional approach with closures
+const createRequestQueue = (initialRequestsPerSecond = 3) => {
+  const queue: Array<() => Promise<any>> = [];
+  let processing = false;
+  let interval = Math.floor(1000 / initialRequestsPerSecond);
+  let lastRequestTime = 0;
 
-  constructor(requestsPerSecond = 3) {
-    // Default to 3 requests per second, which is conservative and safe
-    this.interval = Math.floor(1000 / requestsPerSecond);
-  }
-
-  setRequestsPerSecond(requestsPerSecond: number) {
+  const setRequestsPerSecond = (requestsPerSecond: number): void => {
     if (requestsPerSecond <= 0) return;
-    this.interval = Math.floor(1000 / requestsPerSecond);
+    interval = Math.floor(1000 / requestsPerSecond);
     console.log(
-      `Rate limit set to ${requestsPerSecond} requests per second (${this.interval}ms between requests)`,
+      `Rate limit set to ${requestsPerSecond} requests per second (${interval}ms between requests)`,
     );
-  }
+  };
 
-  async add<T>(fn: () => Promise<T>): Promise<T> {
+  const processQueue = async (): Promise<void> => {
+    if (processing || queue.length === 0) return;
+
+    processing = true;
+
+    while (queue.length > 0) {
+      const now = Date.now();
+      const timeSinceLastRequest = now - lastRequestTime;
+
+      // Wait if needed to respect the rate limit
+      if (timeSinceLastRequest < interval) {
+        const waitTime = interval - timeSinceLastRequest;
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
+      }
+
+      // Execute the next request
+      const request = queue.shift();
+      if (request) {
+        lastRequestTime = Date.now();
+        try {
+          await request();
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
+          // Don't log the error here - let it propagate to the actual handler
+        }
+      }
+    }
+
+    processing = false;
+  };
+
+  const add = async <T>(fn: () => Promise<T>): Promise<T> => {
     return new Promise((resolve, reject) => {
-      this.queue.push(async () => {
+      queue.push(async () => {
         try {
           const result = await fn();
           resolve(result);
@@ -48,46 +74,20 @@ class RequestQueue {
         }
       });
 
-      if (!this.processing) {
-        this.processQueue();
+      if (!processing) {
+        processQueue();
       }
     });
-  }
+  };
 
-  private async processQueue() {
-    if (this.processing || this.queue.length === 0) return;
+  return {
+    add,
+    setRequestsPerSecond,
+  };
+};
 
-    this.processing = true;
-
-    while (this.queue.length > 0) {
-      const now = Date.now();
-      const timeSinceLastRequest = now - this.lastRequestTime;
-
-      // Wait if needed to respect the rate limit
-      if (timeSinceLastRequest < this.interval) {
-        const waitTime = this.interval - timeSinceLastRequest;
-        await new Promise((resolve) => setTimeout(resolve, waitTime));
-      }
-
-      // Execute the next request
-      const request = this.queue.shift();
-      if (request) {
-        this.lastRequestTime = Date.now();
-        try {
-          await request();
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (error) {
-          // Don't log the error here - let it propagate to the actual handler
-        }
-      }
-    }
-
-    this.processing = false;
-  }
-}
-
-// Global request queue instance
-const requestQueue = new RequestQueue();
+// Create a global request queue instance
+const requestQueue = createRequestQueue();
 
 /**
  * Sets the number of requests per second to limit API calls
