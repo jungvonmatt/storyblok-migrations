@@ -13,7 +13,7 @@ export default defineMigration({
     display_name: "Text",
     is_root: false,
     is_nestable: true,
-    component_group_name: "Contents",
+    component_group_name: "Content",
     schema: {
       body: richtextField({
         translatable: true,
