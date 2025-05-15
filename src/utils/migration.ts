@@ -18,6 +18,8 @@ import { cloneDeep, isEmpty, isNull } from "lodash";
 import { IStory } from "../types/stories";
 import { getPreview } from "./component";
 import { StringKeyOf } from "type-fest";
+import { MigrationType } from "../types/migration";
+import { Migration } from "../types/migration";
 
 export type RunMigrationOptions = {
   isDryrun?: boolean;
@@ -358,3 +360,33 @@ export const helper = {
     return component;
   },
 };
+
+/**
+ * Define a type-safe migration object for Storyblok schema changes.
+ * This helper function provides compile-time type checking for different migration types.
+ *
+ * @param migration A strongly-typed migration object that must match one of the following types:
+ *                 - ComponentGroupMigration (create/update/delete component groups)
+ *                 - ComponentMigration (create/update/delete components)
+ *                 - DatasourceMigration (create/update/delete datasources)
+ *                 - StoryMigration (create/update/delete stories)
+ *                 - TransformEntriesMigration (bulk transform content entries)
+ *
+ * @returns The provided migration object without any transformation
+ * @example
+ * ```ts
+ * const migration = defineMigration({
+ *   type: 'create-component',
+ *   name: 'my-component',
+ *   component: {
+ *     name: 'My Component',
+ *     // ... component definition
+ *   }
+ * });
+ * ```
+ */
+export function defineMigration<T extends MigrationType>(
+  migration: Extract<Migration, { type: T }>,
+): Extract<Migration, { type: T }> {
+  return migration;
+}

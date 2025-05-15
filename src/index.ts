@@ -1,6 +1,6 @@
-export { defineMigration, run } from "./commands/run";
+export { run } from "./commands/run";
 export { type Migration, type MigrationType } from "./types/migration";
-
+export { defineMigration } from "./utils/migration";
 // Component Schema Field Helpers
 export {
   textField,
