@@ -47,10 +47,30 @@ vi.mock("../../utils/api", async () => {
         update: vi.fn(),
         delete: vi.fn(),
       },
-      components: {
+      componentGroups: {
+        getAll: vi.fn(),
         get: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+      },
+      components: {
+        getAll: vi.fn(),
+        get: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+      },
+      spaces: {
+        getSpaceOptions: vi.fn(),
+        getSpaceLanguages: vi.fn(),
       },
       datasources: {
+        getAll: vi.fn(),
+        get: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
         has: vi.fn(),
       },
     },
@@ -323,14 +343,128 @@ describe("API Utilities", () => {
       });
     });
 
+    describe("componentGroups", () => {
+      const mockComponentGroup = {
+        id: 123,
+        name: "Test Group",
+        components: [],
+      };
+
+      it("should get all component groups", async () => {
+        // Arrange
+        const mockResponse = {
+          data: {
+            component_groups: [mockComponentGroup],
+          },
+        };
+        (api.componentGroups.getAll as Mock).mockResolvedValue(mockResponse);
+
+        // Act
+        const result = await api.componentGroups.getAll();
+
+        // Assert
+        expect(result.data.component_groups).toEqual([mockComponentGroup]);
+      });
+
+      it("should get component group by ID", async () => {
+        // Arrange
+        const mockResponse = {
+          data: {
+            component_group: mockComponentGroup,
+          },
+        };
+        (api.componentGroups.get as Mock).mockResolvedValue(mockResponse);
+
+        // Act
+        const result = await api.componentGroups.get(123);
+
+        // Assert
+        expect(result.data.component_group).toEqual(mockComponentGroup);
+      });
+
+      it("should create component group", async () => {
+        // Arrange
+        const newGroup = { name: "New Group" };
+        const mockResponse = {
+          data: {
+            component_group: { ...newGroup, id: 123 },
+          },
+        };
+        (api.componentGroups.create as Mock).mockResolvedValue(mockResponse);
+
+        // Act
+        const result = await api.componentGroups.create(newGroup);
+
+        // Assert
+        expect(result.data.component_group).toEqual({ ...newGroup, id: 123 });
+      });
+
+      it("should update component group", async () => {
+        // Arrange
+        const updatedGroup = { ...mockComponentGroup, name: "Updated Group" };
+        const mockResponse = {
+          data: {
+            component_group: updatedGroup,
+          },
+        };
+        (api.componentGroups.update as Mock).mockResolvedValue(mockResponse);
+
+        // Act
+        const result = await api.componentGroups.update(updatedGroup);
+
+        // Assert
+        expect(result.data.component_group).toEqual(updatedGroup);
+      });
+
+      it("should delete component group", async () => {
+        // Arrange
+        const mockResponse = {
+          data: {
+            component_group: mockComponentGroup,
+          },
+        };
+        (api.componentGroups.delete as Mock).mockResolvedValue(mockResponse);
+
+        // Act
+        const result = await api.componentGroups.delete(123);
+
+        // Assert
+        expect(result.data.component_group).toEqual(mockComponentGroup);
+      });
+    });
+
     describe("components", () => {
+      const mockComponent = {
+        id: 123,
+        name: "Test Component",
+        schema: {},
+        created_at: "2024-01-01T00:00:00Z",
+        updated_at: "2024-01-01T00:00:00Z",
+      };
+
+      it("should get all components", async () => {
+        // Arrange
+        const mockResponse = {
+          data: {
+            components: [mockComponent],
+          },
+        };
+        (api.components.getAll as Mock).mockResolvedValue(mockResponse);
+
+        // Act
+        const result = await api.components.getAll();
+
+        // Assert
+        expect(result.data.components).toEqual([mockComponent]);
+      });
+
       it("should get component by ID", async () => {
         // Arrange
-        const mockComponent = {
-          id: 123,
-          name: "Test Component",
+        const mockResponse = {
+          data: {
+            component: mockComponent,
+          },
         };
-        const mockResponse = { data: { component: mockComponent } };
         (api.components.get as Mock).mockResolvedValue(mockResponse);
 
         // Act
@@ -339,9 +473,195 @@ describe("API Utilities", () => {
         // Assert
         expect(result.data.component).toEqual(mockComponent);
       });
+
+      it("should create component", async () => {
+        // Arrange
+        const newComponent = { name: "New Component", schema: {} };
+        const mockResponse = {
+          data: {
+            component: { ...newComponent, id: 123 },
+          },
+        };
+        (api.components.create as Mock).mockResolvedValue(mockResponse);
+
+        // Act
+        const result = await api.components.create(newComponent);
+
+        // Assert
+        expect(result.data.component).toEqual({ ...newComponent, id: 123 });
+      });
+
+      it("should update component", async () => {
+        // Arrange
+        const updatedComponent = {
+          ...mockComponent,
+          name: "Updated Component",
+        };
+        const mockResponse = {
+          data: {
+            component: updatedComponent,
+          },
+        };
+        (api.components.update as Mock).mockResolvedValue(mockResponse);
+
+        // Act
+        const result = await api.components.update(updatedComponent);
+
+        // Assert
+        expect(result.data.component).toEqual(updatedComponent);
+      });
+
+      it("should delete component", async () => {
+        // Arrange
+        const mockResponse = {
+          data: {
+            component: mockComponent,
+          },
+        };
+        (api.components.delete as Mock).mockResolvedValue(mockResponse);
+
+        // Act
+        const result = await api.components.delete(123);
+
+        // Assert
+        expect(result.data.component).toEqual(mockComponent);
+      });
+    });
+
+    describe("spaces", () => {
+      const mockSpace = {
+        id: 123,
+        name: "Test Space",
+        options: {
+          languages: ["en", "de"],
+        },
+      };
+
+      it("should get space options", async () => {
+        // Arrange
+        (api.spaces.getSpaceOptions as Mock).mockResolvedValue(
+          mockSpace.options,
+        );
+
+        // Act
+        const result = await api.spaces.getSpaceOptions();
+
+        // Assert
+        expect(result).toEqual(mockSpace.options);
+      });
+
+      it("should get space languages", async () => {
+        // Arrange
+        (api.spaces.getSpaceLanguages as Mock).mockResolvedValue(
+          mockSpace.options.languages,
+        );
+
+        // Act
+        const result = await api.spaces.getSpaceLanguages();
+
+        // Assert
+        expect(result).toEqual(mockSpace.options.languages);
+      });
     });
 
     describe("datasources", () => {
+      const mockDatasource = {
+        id: 123,
+        name: "Test Datasource",
+        slug: "test-datasource",
+        dimensions: [],
+        created_at: "2024-01-01T00:00:00Z",
+        updated_at: "2024-01-01T00:00:00Z",
+      };
+
+      it("should get all datasources", async () => {
+        // Arrange
+        const mockResponse = {
+          data: {
+            datasources: [mockDatasource],
+          },
+        };
+        (api.datasources.getAll as Mock).mockResolvedValue(mockResponse);
+
+        // Act
+        const result = await api.datasources.getAll();
+
+        // Assert
+        expect(result.data.datasources).toEqual([mockDatasource]);
+      });
+
+      it("should get datasource by ID", async () => {
+        // Arrange
+        const mockResponse = {
+          data: {
+            datasource: mockDatasource,
+          },
+        };
+        (api.datasources.get as Mock).mockResolvedValue(mockResponse);
+
+        // Act
+        const result = await api.datasources.get(123);
+
+        // Assert
+        expect(result.data.datasource).toEqual(mockDatasource);
+      });
+
+      it("should create datasource", async () => {
+        // Arrange
+        const newDatasource = {
+          name: "New Datasource",
+          slug: "new-datasource",
+        };
+        const mockResponse = {
+          data: {
+            datasource: { ...newDatasource, id: 123 },
+          },
+        };
+        (api.datasources.create as Mock).mockResolvedValue(mockResponse);
+
+        // Act
+        const result = await api.datasources.create(newDatasource);
+
+        // Assert
+        expect(result.data.datasource).toEqual({ ...newDatasource, id: 123 });
+      });
+
+      it("should update datasource", async () => {
+        // Arrange
+        const updatedDatasource = {
+          ...mockDatasource,
+          name: "Updated Datasource",
+        };
+        const mockResponse = {
+          data: {
+            datasource: updatedDatasource,
+          },
+        };
+        (api.datasources.update as Mock).mockResolvedValue(mockResponse);
+
+        // Act
+        const result = await api.datasources.update(updatedDatasource);
+
+        // Assert
+        expect(result.data.datasource).toEqual(updatedDatasource);
+      });
+
+      it("should delete datasource", async () => {
+        // Arrange
+        const mockResponse = {
+          data: {
+            datasource: mockDatasource,
+          },
+        };
+        (api.datasources.delete as Mock).mockResolvedValue(mockResponse);
+
+        // Act
+        const result = await api.datasources.delete(123);
+
+        // Assert
+        expect(result.data.datasource).toEqual(mockDatasource);
+      });
+
       it("should check if datasource exists", async () => {
         // Arrange
         (api.datasources.has as Mock).mockResolvedValue(true);
