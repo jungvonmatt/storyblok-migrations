@@ -5,6 +5,32 @@ import path from "path";
 import fs from "fs";
 import storyblokToTypescript from "storyblok-generate-ts";
 
+/**
+ * Generates TypeScript type definitions from Storyblok components schema.
+ *
+ * This function performs the following steps:
+ * 1. Loads the Storyblok configuration to get the space ID
+ * 2. Locates the components schema file (components.{spaceId}.json)
+ * 3. Creates the output directory if it doesn't exist
+ * 4. Generates TypeScript types using storyblok-generate-ts
+ * 5. Enhances the generated types by:
+ *    - Adding SbBlokData extension to component interfaces
+ *    - Adding custom type parsers for special fields (colorpicker, seo-metatags)
+ *    - Adding proper imports and documentation
+ *
+ * @throws {Error} If any of the following conditions are met:
+ *   - No Storyblok Space ID is found in the configuration
+ *   - Components schema file is not found
+ *   - Type generation fails
+ *
+ * @remarks
+ * - Requires running 'sb-migrate config' first to set up the Space ID
+ * - Requires running 'sb-migrate pull-components' first to generate the schema file
+ * - Generated types will be saved to 'storyblok/types/storyblok.gen.d.ts'
+ * - Generated types include custom parsers for:
+ *   - Color picker fields (storyblok-colorpicker, native-color-picker)
+ *   - SEO meta tags fields (seo-metatags)
+ */
 export async function generateTypes() {
   try {
     const config = await loadConfig();
@@ -12,15 +38,15 @@ export async function generateTypes() {
     if (!config?.spaceId) {
       console.error(
         pc.red(
-          "✗ No Storyblok Space ID found. Please run 'sb-migrate config' first."
-        )
+          "✗ No Storyblok Space ID found. Please run 'sb-migrate config' first.",
+        ),
       );
       process.exit(1);
     }
 
     const schemaFile = path.join(
       process.cwd(),
-      `components.${config.spaceId}.json`
+      `components.${config.spaceId}.json`,
     );
     const outputDir = path.join(process.cwd(), "storyblok", "types");
     const outputFile = path.join(outputDir, "storyblok.gen.d.ts");
@@ -28,8 +54,8 @@ export async function generateTypes() {
     if (!fs.existsSync(schemaFile)) {
       console.error(
         pc.red(
-          `✗ Components schema file not found at ${schemaFile}. Please run 'sb-migrate pull-components' first.`
-        )
+          `✗ Components schema file not found at ${schemaFile}. Please run 'sb-migrate pull-components' first.`,
+        ),
       );
       process.exit(1);
     }
@@ -107,13 +133,13 @@ export async function generateTypes() {
             return match;
           }
           return `${start} extends SbBlokData ${end}`;
-        }
+        },
       );
 
       fs.writeFileSync(
         outputFile,
         `/* eslint-disable */\nimport type { SbBlokData } from '@storyblok/vue'\n${content}`,
-        { encoding: "utf8" }
+        { encoding: "utf8" },
       );
 
       console.log(pc.green("✓ Successfully generated TypeScript types"));
