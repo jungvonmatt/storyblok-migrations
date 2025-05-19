@@ -23,9 +23,11 @@ import storyblokToTypescript from "storyblok-generate-ts";
  *   - Components schema file is not found
  *   - Type generation fails
  *
+ * @requires storyblok-generate-ts - For generating TypeScript types from Storyblok components
+ * @requires config - A valid configuration with a Space ID must exist
+ * @requires components.{spaceId}.json - The Storyblok components schema file
+ *
  * @remarks
- * - Requires running 'sb-migrate config' first to set up the Space ID
- * - Requires running 'sb-migrate pull-components' first to generate the schema file
  * - Generated types will be saved to 'storyblok/types/storyblok.gen.d.ts'
  * - Generated types include custom parsers for:
  *   - Color picker fields (storyblok-colorpicker, native-color-picker)

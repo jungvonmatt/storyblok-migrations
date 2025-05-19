@@ -82,6 +82,7 @@ describe("generate-types command", () => {
     const mockConfig: StoryblokConfig = {
       spaceId: "test-space",
       oauthToken: "test-token",
+      region: "eu",
     };
 
     vi.mocked(loadConfig).mockResolvedValue(mockConfig);
@@ -121,6 +122,7 @@ describe("generate-types command", () => {
     const mockConfig: StoryblokConfig = {
       spaceId: "test-space",
       oauthToken: "test-token",
+      region: "eu",
     };
 
     vi.mocked(loadConfig).mockResolvedValue(mockConfig);
@@ -138,6 +140,7 @@ describe("generate-types command", () => {
     const mockConfig: StoryblokConfig = {
       spaceId: "test-space",
       oauthToken: "test-token",
+      region: "eu",
     };
 
     vi.mocked(loadConfig).mockResolvedValue(mockConfig);
@@ -157,6 +160,7 @@ describe("generate-types command", () => {
     const mockConfig: StoryblokConfig = {
       spaceId: "test-space",
       oauthToken: "test-token",
+      region: "eu",
     };
 
     vi.mocked(loadConfig).mockResolvedValue(mockConfig);

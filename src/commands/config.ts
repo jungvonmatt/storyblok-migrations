@@ -1,8 +1,32 @@
-import { confirm, input } from "@inquirer/prompts";
 import pc from "picocolors";
-import { StoryblokConfig } from "../types/config";
-import { loadEnvConfig, saveConfig, loadConfig } from "../utils/config";
+import {
+  loadEnvConfig,
+  saveConfig,
+  loadConfig,
+  verifyExistingConfig,
+  promptForConfig,
+} from "../utils/config";
 
+/**
+ * Main configuration function for Storyblok CLI.
+ *
+ * This function:
+ * 1. Loads existing configuration from file and environment variables
+ * 2. If configuration exists:
+ *    - Verifies existing values with user
+ *    - Updates if needed
+ * 3. If no configuration exists:
+ *    - Prompts for all required values
+ * 4. Saves the final configuration to .storyblokrc.json
+ *
+ * The configuration process follows this flow:
+ * - First checks for existing config in .storyblokrc.json
+ * - Then checks for environment variables
+ * - If found, verifies with user
+ * - If not found or user wants to update, prompts for new values
+ *
+ * @throws {Error} If configuration saving fails
+ */
 export async function configureStoryblok() {
   try {
     const existingConfig = await loadConfig();
@@ -28,66 +52,4 @@ export async function configureStoryblok() {
   } catch (error) {
     console.error(pc.red(`✗ Failed to configure Storyblok: ${error}`));
   }
-}
-
-export async function verifyExistingConfig(
-  config: Partial<StoryblokConfig>
-): Promise<StoryblokConfig | null> {
-  console.log(pc.blue("Please verify the following options:"));
-
-  if (config.spaceId) {
-    console.log(`Space ID: ${config.spaceId}`);
-  }
-  if (config.oauthToken) {
-    console.log(`OAuth Token: ${config.oauthToken}`);
-  }
-
-  const useExisting = await confirm({
-    message: "Would you like to use these values?",
-    default: true,
-  });
-
-  if (!useExisting) {
-    return null;
-  }
-
-  // If we're missing any required fields, prompt for them
-  const updatedConfig: Partial<StoryblokConfig> = { ...config };
-
-  if (!updatedConfig.spaceId) {
-    updatedConfig.spaceId = await input({
-      message: "Enter your Storyblok Space ID:",
-      validate: (value) => value.length > 0,
-    });
-  }
-
-  if (!updatedConfig.oauthToken) {
-    updatedConfig.oauthToken = await input({
-      message: "Enter your Storyblok OAuth Token:",
-      validate: (value) => value.length > 0,
-    });
-  }
-
-  return updatedConfig as StoryblokConfig;
-}
-
-export async function promptForConfig(
-  existing: Partial<StoryblokConfig>
-): Promise<StoryblokConfig> {
-  const spaceId = await input({
-    message: "Enter your Storyblok Space ID:",
-    default: existing.spaceId,
-    validate: (value) => value.length > 0,
-  });
-
-  const oauthToken = await input({
-    message: "Enter your Storyblok OAuth Token:",
-    default: existing.oauthToken,
-    validate: (value) => value.length > 0,
-  });
-
-  return {
-    spaceId,
-    oauthToken,
-  };
 }
