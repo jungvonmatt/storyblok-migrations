@@ -17,13 +17,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           types: |
-            feat
-            fix
-            docs
-            style
-            refactor
-            test
-            chore
+            Feature
+            Fix
+            Docs
+            Style
+            Refactor
+            Test
+            Chore
           requireScope: false
 
       - name: Check PR Description
