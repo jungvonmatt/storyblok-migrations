@@ -12,6 +12,7 @@ export async function loadEnvConfig(): Promise<Partial<StoryblokConfig>> {
   return {
     spaceId: process.env.STORYBLOK_SPACE_ID,
     oauthToken: process.env.STORYBLOK_OAUTH_TOKEN,
+    region: process.env.STORYBLOK_REGION as StoryblokRegion,
   };
 }
 

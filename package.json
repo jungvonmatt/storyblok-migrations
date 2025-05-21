@@ -1,7 +1,7 @@
 {
   "name": "sb-migrate",
   "version": "0.0.1",
-  "description": "CLI tool for managing Storyblok content migrations",
+  "description": "CLI tool for managing Storyblok schema and content migrations",
   "main": "dist/src/index.js",
   "exports": {
     ".": {

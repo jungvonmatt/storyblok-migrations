@@ -33,7 +33,12 @@ export async function configureStoryblok() {
     const envConfig = await loadEnvConfig();
 
     // Check if configuration exists in config file or .env
-    if (existingConfig || envConfig.spaceId || envConfig.oauthToken) {
+    if (
+      existingConfig ||
+      envConfig.spaceId ||
+      envConfig.oauthToken ||
+      envConfig.region
+    ) {
       const configToVerify = existingConfig || envConfig;
       const verifiedConfig = await verifyExistingConfig(configToVerify);
       if (verifiedConfig) {
