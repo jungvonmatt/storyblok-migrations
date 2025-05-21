@@ -39,7 +39,7 @@ type RollbackData = {
  * @param  {Object} story
  * @return {Boolean}
  */
-const isStoryPublishedWithoutChanges = (story: IStory): boolean => {
+export const isStoryPublishedWithoutChanges = (story: IStory): boolean => {
   return story.published === true && story.unpublished_changes === false;
 };
 
@@ -48,7 +48,7 @@ const isStoryPublishedWithoutChanges = (story: IStory): boolean => {
  * @param  {Object} story
  * @return {Boolean}
  */
-const isStoryWithUnpublishedChanges = (story: IStory): boolean => {
+export const isStoryWithUnpublishedChanges = (story: IStory): boolean => {
   return story.published === true && story.unpublished_changes === true;
 };
 
