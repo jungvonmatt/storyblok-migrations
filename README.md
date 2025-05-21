@@ -1,34 +1,32 @@
 # Sb Migrate
 
-Sb Migrate offers additional functionality on top of the existing Storyblok CLI. It helps developers manage Storyblok components, generate TypeScript types, and handle configuration across projects. The main features are:
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://github.com/jungvonmatt/storyblok-migrations/actions/workflows/test.yaml/badge.svg)](https://github.com/jungvonmatt/storyblok-migrations/actions/workflows/test.yaml)
 
-- Configure Storyblok credentials (Space ID and OAuth token)
-- Login to Storyblok
-- Pull component schemas
-- Generate TypeScript types
-- Run Component(Schema) Migrations
+Sb Migrate offers additional functionality on top of the existing Storyblok CLI by providing a modern and simple command-line tool for creating, running and managing not only content migrations but also schema migrations.
+
+## Features
+
+- Configure Storyblok credentials (Space ID, OAuth token and Region)
+- Login to Storyblok CLI using configured credentials from the config file or environment variables
+- Pull component schemas from Storyblok spaces
+- Generate TypeScript type definitions from component schemas
+- Generate migrations for schema and content migrations based on templates for each migration type
+- Automatically create timestamped rollback migrations when running migrations that update existing schema or content
+- Run Schema Migrations
 - Run Content Migrations
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-
-## Tech Stack
+## Built with
 
 - **Node.js** - JavaScript runtime
 - **TypeScript** - Type-safe JavaScript
 - **Commander.js** - Command-line interface framework
 - **Inquirer.js** - Interactive command-line prompts
-- **Storyblok CLI** - Official Storyblok command-line interface
 - **Cosmiconfig** - Configuration file loader
+- **Picocolors** - Colored console output
+- **Storyblok CLI** - Official Storyblok command-line interface
+- **Storyblok API** - Official Storyblok API
 - **Vitest** - Testing framework
-
-## Features
-
-- Configure Storyblok credentials (Space ID and OAuth token)
-- Login to Storyblok CLI using configured credentials
-- Pull component schemas from Storyblok spaces
-- Generate TypeScript type definitions from component schemas
-- Run Component(Schema) Migrations
-- Run Content Migrations
 
 ## Getting Started
 
