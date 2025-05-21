@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://github.com/jungvonmatt/storyblok-migrations/actions/workflows/test.yaml/badge.svg)](https://github.com/jungvonmatt/storyblok-migrations/actions/workflows/test.yaml)
 
-Sb Migrate offers additional functionality on top of the existing Storyblok CLI by providing a modern and simple command-line tool for creating, running and managing not only content migrations but also schema migrations.
+Sb Migrate extends the core functionality of [Storyblok's CLI](https://github.com/storyblok/storyblok-cli) by providing a modern and simple command-line tool for creating, running, and managing not only content migrations but also schema migrations. It makes it easy and safe to deploy changes to your content model in a way that can be reviewed and tested before being deployed to production. This approach enables teams to evolve their content structure confidently, with greater control and traceability throughout the development lifecycle.
 
 ## Features
 
@@ -27,39 +27,56 @@ Sb Migrate offers additional functionality on top of the existing Storyblok CLI 
 - **Storyblok CLI** - Official Storyblok command-line interface
 - **Storyblok API** - Official Storyblok API
 - **Vitest** - Testing framework
+- **Husky** - Git hooks
 
 ## Getting Started
 
-### Prerequisites
+### Requirements
 
-- Node.js (see .nvmrc for version)
-- Storyblok CLI (`npm install -g storyblok` or `yarn global add storyblok`)
+- Node.js 20.x or higher (use `.nvmrc` for auto-installation)
+- Storyblok CLI:
+  - `npm install -g storyblok` or
+  - `yarn global add storyblok` or
+  - `pnpm add -g storyblok`
 
-### Global Installation
+### Install
+
+#### Local Development
+
+> If you want to run, test and develop `sb-migrate` locally please follow the instructions here: [DEVELOPMENT.md](DEVELOPMENT.md).
+
+#### Global Installation
 
 ```bash
-npm install -g storyblok-migrations
+npm install -g sb-migrate
 # or
-yarn global add storyblok-migrations
+yarn global add sb-migrate
 # or
-pnpm add -g storyblok-migrations
+pnpm add -g sb-migrate
 ```
 
-### Local Installation
+#### Local Installation
 
 ```bash
-npm install storyblok-migrations --save-dev
+npm install sb-migrate
 # or
-yarn add storyblok-migrations --dev
+yarn add sb-migrate
 # or
-pnpm add -D storyblok-migrations
+pnpm add sb-migrate
 ```
 
-## Commands
+#### Configuration
 
-### Configure Storyblok
+After installing the package, you need to configure your Storyblok credentials. You will be asked to provide your `Space ID` and `OAuth Token` and you can choose the `region` which defaults to `eu`.
 
-Set up your Storyblok credentials (Space ID and OAuth Token):
+- The `Space ID` is a unique identifier for your Storyblok Space. You can find it in the link of your Storyblok Space, e.g.
+  `https://app.storyblok.com/#/me/spaces/SPACE_ID/dashboard`
+
+- The `OAuth Token` is a personal access token that you can create in the [Storyblok Account Settings](https://app.storyblok.com/#/me/account?tab=token).
+
+- The `region` is the region of your Storyblok account.
+
+After you got your `Space ID` and `OAuth Token`, you can configure the tool by running the following command:
 
 ```bash
 sb-migrate config
@@ -67,110 +84,57 @@ sb-migrate config
 
 This command will:
 
-- Check for existing configuration in `.storyblokrc.json` or environment variables
-- Prompt you to verify or update existing configuration
-- Prompt for new credentials if needed
+- Check for existing configuration in `.storyblokrc.json` or `.env` file
+- Prompt you to verify or add/update existing configuration
 - Save the configuration to `.storyblokrc.json` in your project root
 
-### Login to Storyblok
+1. **Configuration file**: `.storyblokrc.json` in your project root
 
-Authenticate with Storyblok using your configured OAuth token:
+   ```json
+   {
+     "spaceId": "your-space-id",
+     "oauthToken": "your-oauth-token"
+   }
+   ```
+
+2. **Environment variables**: Create a `.env` file or set environment variables
+   ```
+   STORYBLOK_SPACE_ID=your-space-id
+   STORYBLOK_OAUTH_TOKEN=your-oauth-token
+   ```
+
+#### Login to Storyblok
+
+As last step you need to login to Storyblok by just running the following command:
 
 ```bash
 sb-migrate login
 ```
 
-This command will:
+## Commands
 
-- Verify that Storyblok CLI is installed
-- Use your configured OAuth token to log in to Storyblok
-- Set the region to EU by default
+| Name                                    | Options                                                                                                                                                                                                                                        | Description                                                                                                                                                                                                            |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `config`                                | None                                                                                                                                                                                                                                           | Sets up Storyblok credentials (Space ID and OAuth Token). Checks for existing configuration in `.storyblokrc.json` or environment variables, prompts to verify/update configuration, and saves to `.storyblokrc.json`. |
+| `login`                                 | None                                                                                                                                                                                                                                           | Authenticates with Storyblok using configured OAuth token. Verifies Storyblok CLI installation and sets region to EU by default.                                                                                       |
+| `npx storyblok logout`                  | None                                                                                                                                                                                                                                           | Logs out from Storyblok.                                                                                                                                                                                               |
+| `pull-components`                       | None                                                                                                                                                                                                                                           | Downloads component schemas from Storyblok space. Verifies Storyblok CLI installation and saves schemas to `components.[space-id].json`.                                                                               |
+| `generate-types`                        | None                                                                                                                                                                                                                                           | Generates TypeScript type definitions from component schemas. Creates types in `storyblok/types/storyblok.gen.d.ts` with proper imports and type extensions.                                                           |
+| `generate-migration`                    | `-t, --type`: Type of migration<br>`-n, --name`: Name of the migration                                                                                                                                                                         | Creates a new migration file. Prompts for migration type (schema/content) and name, creates timestamped file with template.                                                                                            |
+| `run <relative path to migration-file>` | `-d, --dry-run`: Preview changes<br>`-s, --space <id>`: Space ID<br>`-t, --token <token>`: OAuth token<br>`-p, --publish <mode>`: Publish mode<br>`-l, --languages <langs>`: Languages to publish<br>`--throttle <ms>`: Delay between requests | Runs a schema or content migration file against Storyblok. Supports various options for controlling the migration process.                                                                                             |
 
-#### Logout from Storyblok
+## Migrations
 
-In case you need to logout from Storyblok, you can use the following command:
+In this section you can see how to create migrations for schema and content migrations.
 
-```bash
-npx storyblok logout
-```
-
-### Pull Component Schemas
-
-Download component schemas from your Storyblok space:
-
-```bash
-sb-migrate pull-components
-```
-
-This command will:
-
-- Verify that Storyblok CLI is installed
-- Use your configured Space ID to pull component schemas
-- Save the schemas to `components.[space-id].json` in your project root
-
-### Generate TypeScript Types
-
-Generate TypeScript type definitions from your component schemas:
-
-```bash
-sb-migrate generate-types
-```
-
-This command will:
-
-- Look for the component schema file (`components.[space-id].json`)
-- Generate TypeScript type definitions in `storyblok/types/storyblok.gen.d.ts`
-- Add proper imports and type extensions for Storyblok Vue integration
-- Include custom type parsing for special field types like color pickers and SEO metatags
-
-### Generate Migration
-
-Create a new migration file:
-
-```bash
-sb-migrate generate-migration
-```
-
-This command will:
-
-- Ask whether you want to create a schema or content migration
-- Prompt for a migration name
-- Create a timestamped migration file in the appropriate directory
-- Include a template with example code for the selected migration type
-
-Options:
-
-- `-t, --type`: Type of migration. See [Migration Types](#migration-types) for more information.
-- `-n, --name`: Name of the migration
-
-Schema migrations are used to modify component structures, while content migrations are used to update content entries.
-
-### Run Migrations
-
-Run a schema or content migration file against Storyblok:
-
-```bash
-sb-migrate run <migration-file>
-```
-
-Options:
-
-- `-d, --dry-run`: Preview changes without applying them
-- `-s, --space <id>`: Storyblok space ID (overrides config)
-- `-t, --token <token>`: Storyblok OAuth token (overrides config)
-- `-p, --publish <mode>`: Publish mode (all, published, published-with-changes)
-- `-l, --languages <langs>`: Languages to publish (default: ALL_LANGUAGES)
-- `--throttle <ms>`: Add delay between API requests to avoid rate limiting (in milliseconds). Default is 3 requests per second (333ms between requests).
-
-## Using Migrations
-
-Sb Migrate provides a type-safe way to define migrations using the `defineMigration` function.
+> When creating migrations, the file must have a `.js` extension to be executed by `sb-migrate`. Thanks to `JSDoc` documentation for all important functions, you’ll still benefit from autocompletion and type safety in your IDE.
 
 ### Type-Safe Migrations
 
 The `defineMigration` function provides full TypeScript support for creating any type of migration:
 
-```typescript
+```javascript
+// migrations/create-component.js
 import { defineMigration, textField } from "sb-migrate";
 
 export default defineMigration({
@@ -219,7 +183,7 @@ The following migration types are supported:
 - `delete-story` - Delete a content entry
 - `transform-entries` - Apply transformations to all entries using a specific component and a transform function.
 
-### Schema Helper Functions
+### Schema Helper Functions (for component migrations)
 
 When creating or updating components with `create-component` or `update-component`, the following helper functions are available to create type-safe schema fields:
 
@@ -243,7 +207,7 @@ When creating or updating components with `create-component` or `update-componen
 
 Example usage in a migration:
 
-```typescript
+```javascript
 import {
   defineMigration,
   textField,
@@ -286,7 +250,7 @@ These helper functions provide proper TypeScript typing, validation, and documen
 
 The most powerful way to perform content migrations is using the `transform-entries` type:
 
-```typescript
+```javascript
 import { defineMigration } from "sb-migrate";
 
 export default defineMigration({
@@ -316,89 +280,13 @@ export default defineMigration({
 
 This migration will be applied to all instances of "my-component" across your content, making it an efficient way to perform bulk content updates.
 
-## Configuration
+### More Examples
 
-The tool looks for configuration in the following places (in order of precedence):
+For more examples on how to use the tool, please refer to the [examples](examples) directory. You will find examples for any migration type.
 
-1. **Configuration file**: `.storyblokrc.json` in your project root
+## Contributing
 
-   ```json
-   {
-     "spaceId": "your-space-id",
-     "oauthToken": "your-oauth-token"
-   }
-   ```
-
-2. **Environment variables**: Create a `.env` file or set environment variables
-   ```
-   STORYBLOK_SPACE_ID=your-space-id
-   STORYBLOK_OAUTH_TOKEN=your-oauth-token
-   ```
-
-## Development
-
-### Clone the repository
-
-```bash
-git clone https://github.com/jungvonmatt/storyblok-migrations.git
-cd storyblok-migrations
-```
-
-### Install dependencies
-
-```bash
-pnpm install
-```
-
-### Build the project
-
-```bash
-pnpm build
-```
-
-### Watch mode for development
-
-```bash
-pnpm dev
-```
-
-### Link to global to test package locally
-
-1. Link the package globally
-
-```bash
-pnpm link -g
-```
-
-2. Run the command in your terminal to test the package locally
-
-```bash
-sb-migrate
-```
-
-3. Unlink the package when done
-
-```bash
-pnpm unlink -g
-```
-
-4. You can also pack the package and install it locally in a repository
-
-```bash
-pnpm pack
-```
-
-5. Install the package in a repository
-
-```bash
-pnpm install path/to/package.tgz
-```
-
-### Run tests
-
-```bash
-pnpm test
-```
+Pull requests and contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
 
 ## License
 
