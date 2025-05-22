@@ -2,7 +2,8 @@
 import fs from "fs";
 import path from "path";
 import pc from "picocolors";
-import { RunMigrationOptions } from "../utils/migration";
+import { select } from "@inquirer/prompts";
+import { RunMigrationOptions, findMigrations } from "../utils/migration";
 import { setRequestsPerSecond } from "../utils/api";
 import { RunOptions } from "../types/migration";
 import {
@@ -21,7 +22,7 @@ import {
   handleTransformEntries,
 } from "../handlers";
 
-export async function run(filePath: string, options: RunOptions = {}) {
+export async function run(filePath?: string, options: RunOptions = {}) {
   // Apply rate limiting if provided
   if (options.throttle && options.throttle > 0) {
     // Convert throttle milliseconds to requests per second
@@ -36,8 +37,27 @@ export async function run(filePath: string, options: RunOptions = {}) {
     setRequestsPerSecond(3);
   }
 
+  // If no file path is provided, let the user select from available migrations
+  if (!filePath) {
+    const migrations = await findMigrations();
+    if (migrations.length === 0) {
+      console.error(
+        `${pc.red("✗")} No migrations found in migrations directory`,
+      );
+      process.exit(1);
+    }
+
+    filePath = await select({
+      message: "Select a migration to run:",
+      choices: migrations.map((migration) => ({
+        name: migration,
+        value: migration,
+      })),
+    });
+  }
+
   // Resolve and load the migration file
-  const resolvedPath = path.resolve(process.cwd(), filePath);
+  const resolvedPath = path.resolve(process.cwd(), "migrations", filePath);
   console.log(`${pc.blue("-")} Loading migration from ${resolvedPath}`);
 
   if (!fs.existsSync(resolvedPath)) {

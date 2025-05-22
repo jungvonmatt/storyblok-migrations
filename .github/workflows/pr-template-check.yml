@@ -20,14 +20,30 @@ jobs:
             });
 
             const template = Buffer.from(templateContent.data.content, 'base64').toString();
-            const templateSections = template.split('####').map(section => section.trim());
 
-            // Check if PR body contains the template structure
-            const hasTemplateStructure = templateSections.every(section => {
-              if (!section) return true; // Skip empty sections
-              return pr.body.includes(section);
-            });
+            // Extract section headers from template
+            const templateSections = template.split('####')
+              .map(section => section.trim())
+              .filter(section => section.length > 0)
+              .map(section => {
+                const lines = section.split('\n');
+                return lines[0].trim();
+              });
 
-            if (!hasTemplateStructure) {
-              core.setFailed('Please use the PR template when creating a pull request. You can find it in the PR description field.');
+            // Extract section headers from PR body
+            const prSections = pr.body.split('####')
+              .map(section => section.trim())
+              .filter(section => section.length > 0)
+              .map(section => {
+                const lines = section.split('\n');
+                return lines[0].trim();
+              });
+
+            // Check if all required sections are present
+            const missingSections = templateSections.filter(section =>
+              !prSections.some(prSection => prSection.includes(section))
+            );
+
+            if (missingSections.length > 0) {
+              core.setFailed(`Please include all required sections in your PR description. Missing sections: ${missingSections.join(', ')}`);
             }

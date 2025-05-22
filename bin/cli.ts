@@ -44,8 +44,10 @@ program
 
 program
   .command("run")
-  .description("Run a schema or content migration file against Storyblok")
-  .argument("<file>", "Path to the migration file")
+  .description(
+    "Run a schema or content migration file against Storyblok. If no file is specified, you can select from available migrations.",
+  )
+  .argument("[file]", "Path to the migration file (optional)")
   .option("-d, --dry-run", "Preview changes without applying them", false)
   .option("-s, --space <id>", "Storyblok space ID (overrides config)")
   .option("-t, --token <token>", "Storyblok OAuth token (overrides config)")
