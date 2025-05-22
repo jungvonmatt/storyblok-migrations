@@ -47,10 +47,7 @@ program
   .description(
     "Run a schema or content migration file against Storyblok. If no file is specified, you can select from available migrations.",
   )
-  .argument(
-    "[file]",
-    "Name of the migration file (e.g., '02-create-datasource.ts'). The file must be in the migrations directory.",
-  )
+  .argument("[file]", "Path to the migration file (optional)")
   .option("-d, --dry-run", "Preview changes without applying them", false)
   .option("-s, --space <id>", "Storyblok space ID (overrides config)")
   .option("-t, --token <token>", "Storyblok OAuth token (overrides config)")
