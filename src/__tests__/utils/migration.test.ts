@@ -7,12 +7,14 @@ import {
   defineMigration,
   Component,
   helper,
+  findMigrations,
 } from "../../utils/migration";
 import { api } from "../../utils/api";
 import { IStory } from "../../types/stories";
 import type { Mock } from "vitest";
 import { IComponent, IComponentSchemaItem } from "../../types/IComponent";
 import { processMigration } from "../../utils/storyblok";
+import fs from "fs";
 
 // Mock dependencies
 vi.mock("../../utils/api", () => ({
@@ -55,6 +57,17 @@ vi.mock("picocolors", () => ({
     yellow: (str: string) => str,
     cyan: (str: string) => str,
   },
+}));
+
+vi.mock("fs", () => ({
+  default: {
+    existsSync: vi.fn(),
+    readdirSync: vi.fn(),
+    statSync: vi.fn(),
+  },
+  existsSync: vi.fn(),
+  readdirSync: vi.fn(),
+  statSync: vi.fn(),
 }));
 
 describe("Migration Utilities", () => {
@@ -447,6 +460,133 @@ describe("Migration Utilities", () => {
       expect(api.components.create).toHaveBeenCalledWith({
         name: "test-component",
       });
+    });
+  });
+
+  describe("findMigrations", () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it("should return empty array if migrations directory doesn't exist", async () => {
+      // Arrange
+      (fs.existsSync as Mock).mockReturnValue(false);
+
+      // Act
+      const result = await findMigrations();
+
+      // Assert
+      expect(result).toEqual([]);
+      expect(fs.existsSync).toHaveBeenCalledWith(
+        expect.stringContaining("migrations"),
+      );
+    });
+
+    it("should find .js and .ts files in migrations directory", async () => {
+      // Arrange
+      (fs.existsSync as Mock).mockReturnValue(true);
+      (fs.readdirSync as Mock).mockReturnValue([
+        { name: "migration1.js", isFile: () => true, isDirectory: () => false },
+        { name: "migration2.ts", isFile: () => true, isDirectory: () => false },
+        { name: "other.txt", isFile: () => true, isDirectory: () => false },
+      ]);
+
+      // Act
+      const result = await findMigrations();
+
+      // Assert
+      expect(result).toEqual(["migration1.js", "migration2.ts"]);
+      expect(result).not.toContain("other.txt");
+    });
+
+    it("should recursively search subdirectories", async () => {
+      // Arrange
+      (fs.existsSync as Mock).mockReturnValue(true);
+      (fs.readdirSync as Mock)
+        .mockImplementationOnce(() => [
+          { name: "schema", isFile: () => false, isDirectory: () => true },
+          { name: "content", isFile: () => false, isDirectory: () => true },
+        ])
+        .mockImplementationOnce(() => [
+          {
+            name: "migration1.js",
+            isFile: () => true,
+            isDirectory: () => false,
+          },
+          {
+            name: "migration2.ts",
+            isFile: () => true,
+            isDirectory: () => false,
+          },
+        ])
+        .mockImplementationOnce(() => [
+          {
+            name: "migration3.js",
+            isFile: () => true,
+            isDirectory: () => false,
+          },
+        ]);
+
+      // Act
+      const result = await findMigrations();
+
+      // Assert
+      expect(result).toEqual([
+        "content/migration3.js",
+        "schema/migration1.js",
+        "schema/migration2.ts",
+      ]);
+    });
+
+    it("should ignore non-migration files", async () => {
+      // Arrange
+      (fs.existsSync as Mock).mockReturnValue(true);
+      (fs.readdirSync as Mock).mockReturnValue([
+        { name: "migration1.js", isFile: () => true, isDirectory: () => false },
+        { name: "config.json", isFile: () => true, isDirectory: () => false },
+        { name: "README.md", isFile: () => true, isDirectory: () => false },
+        { name: "migration2.ts", isFile: () => true, isDirectory: () => false },
+      ]);
+
+      // Act
+      const result = await findMigrations();
+
+      // Assert
+      expect(result).toEqual(["migration1.js", "migration2.ts"]);
+      expect(result).not.toContain("config.json");
+      expect(result).not.toContain("README.md");
+    });
+
+    it("should return sorted list of migrations", async () => {
+      // Arrange
+      (fs.existsSync as Mock).mockReturnValue(true);
+      (fs.readdirSync as Mock).mockReturnValue([
+        {
+          name: "z-migration.js",
+          isFile: () => true,
+          isDirectory: () => false,
+        },
+        {
+          name: "a-migration.ts",
+          isFile: () => true,
+          isDirectory: () => false,
+        },
+        {
+          name: "m-migration.js",
+          isFile: () => true,
+          isDirectory: () => false,
+        },
+      ]);
+
+      // Act
+      const result = await findMigrations();
+
+      // Assert
+      expect(result).toEqual([
+        "a-migration.ts",
+        "m-migration.js",
+        "z-migration.js",
+      ]);
     });
   });
 });
