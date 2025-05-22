@@ -76,3 +76,7 @@ pnpm test
 #### Tests when committing
 
 This project uses [Husky](https://typicode.github.io/husky/#/) to run all tests automatically when committing. Please refer to the [Husky](https://typicode.github.io/husky/#/) documentation for more information.
+
+#### Tests in the pipeline
+
+The pipeline will run all tests and checks. Please refer to the [GitHub Actions](.github/workflows/test.yaml) file for more information.

@@ -28,6 +28,9 @@ Sb Migrate extends the core functionality of [Storyblok's CLI](https://github.co
 - **Storyblok API** - Official Storyblok API
 - **Vitest** - Testing framework
 - **Husky** - Git hooks
+- **JSDoc** - Documentation generator
+- **ESLint** - Linting tool
+- **Prettier** - Code formatter
 
 ## Getting Started
 
@@ -93,7 +96,8 @@ This command will:
    ```json
    {
      "spaceId": "your-space-id",
-     "oauthToken": "your-oauth-token"
+     "oauthToken": "your-oauth-token",
+     "region": "eu"
    }
    ```
 
@@ -101,6 +105,7 @@ This command will:
    ```
    STORYBLOK_SPACE_ID=your-space-id
    STORYBLOK_OAUTH_TOKEN=your-oauth-token
+   STORYBLOK_REGION=eu
    ```
 
 #### Login to Storyblok
@@ -115,6 +120,7 @@ sb-migrate login
 
 | Name                                    | Options                                                                                                                                                                                                                                        | Description                                                                                                                                                                                                            |
 | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `help`                                  | None                                                                                                                                                                                                                                           | Displays help information about available commands and their usage.                                                                                                                                                    |
 | `config`                                | None                                                                                                                                                                                                                                           | Sets up Storyblok credentials (Space ID and OAuth Token). Checks for existing configuration in `.storyblokrc.json` or environment variables, prompts to verify/update configuration, and saves to `.storyblokrc.json`. |
 | `login`                                 | None                                                                                                                                                                                                                                           | Authenticates with Storyblok using configured OAuth token. Verifies Storyblok CLI installation and sets region to EU by default.                                                                                       |
 | `npx storyblok logout`                  | None                                                                                                                                                                                                                                           | Logs out from Storyblok.                                                                                                                                                                                               |
@@ -127,7 +133,7 @@ sb-migrate login
 
 In this section you can see how to create migrations for schema and content migrations.
 
-> When creating migrations, the file must have a `.js` extension to be executed by `sb-migrate`. Thanks to `JSDoc` documentation for all important functions, you’ll still benefit from autocompletion and type safety in your IDE.
+> When creating migrations, the file must have a `.js` extension to be executed by `sb-migrate`. Thanks to `JSDoc` documentation for all important functions, you'll still benefit from autocompletion and type safety in your IDE.
 
 ### Type-Safe Migrations
 
@@ -282,7 +288,7 @@ This migration will be applied to all instances of "my-component" across your co
 
 ### More Examples
 
-For more examples on how to use the tool, please refer to the [examples](examples) directory. You will find examples for any migration type.
+For additional migration examples, please refer to the [examples](examples) directory. It contains examples for every type of migration.
 
 ## Contributing
 
