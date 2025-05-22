@@ -59,10 +59,11 @@ export async function run(filePath?: string, options: RunOptions = {}) {
         value: migration,
       })),
     });
+    filePath = path.join("migrations", filePath);
   }
 
   // Resolve and load the migration file
-  const resolvedPath = path.resolve(process.cwd(), "migrations", filePath);
+  const resolvedPath = path.resolve(process.cwd(), filePath);
   console.log(`${pc.blue("-")} Loading migration from ${resolvedPath}`);
 
   if (!fs.existsSync(resolvedPath)) {
