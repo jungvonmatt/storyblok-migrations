@@ -61,9 +61,8 @@ program
   )
   .option(
     "--throttle <ms>",
-    "Add delay between API requests to avoid rate limiting (in milliseconds)",
+    "Add delay between API requests to avoid rate limiting (in milliseconds, default: 333ms = 3 requests per second)",
     (value) => parseInt(value, 10),
-    0,
   )
   .action((filePath, options) => run(filePath, options));
 
