@@ -42,8 +42,6 @@ program
   .option("-n, --name <NAME>", "Name of the migration")
   .action((options) => generateMigration(options));
 
-// TODO: add a command to run all migrations in the migrations/schema folder
-// TODO: add the possibility to run a single migration file with a specific name and not the full path as argument
 program
   .command("run")
   .description("Run a schema or content migration file against Storyblok")
