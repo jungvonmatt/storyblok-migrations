@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach, Mock } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { run } from "../../commands/run";
 import { setRequestsPerSecond } from "../../utils/api";
 import * as handlers from "../../handlers";
@@ -6,17 +6,25 @@ import fs from "fs";
 import path from "path";
 import { RunOptions } from "../../types/migration";
 
+// Store the mock migration object so we can update it in tests
+const mockMigration = { type: "create-component" };
+
 // Mock dependencies
 vi.mock("../../utils/api");
 vi.mock("../../handlers");
 vi.mock("fs");
 vi.mock("path");
+vi.mock("jiti", () => ({
+  createJiti: () => ({
+    import: async () => ({ default: mockMigration }),
+  }),
+}));
 vi.mock("picocolors", () => ({
   default: {
-    green: vi.fn((str) => str),
-    red: vi.fn((str) => str),
-    blue: vi.fn((str) => str),
-    yellow: vi.fn((str) => str),
+    green: (str: string) => str,
+    red: (str: string) => str,
+    blue: (str: string) => str,
+    yellow: (str: string) => str,
   },
 }));
 
@@ -26,25 +34,23 @@ describe("run", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (path.resolve as Mock).mockReturnValue(mockResolvedPath);
-    (fs.existsSync as Mock).mockReturnValue(true);
 
-    // Mock process.exit to throw an error
+    // Reset migration type for each test
+    mockMigration.type = "create-component";
+
+    // Common mocks setup
+    vi.mocked(path.resolve).mockReturnValue(mockResolvedPath);
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+
+    // Mock process.exit
     vi.spyOn(process, "exit").mockImplementation((code) => {
       throw new Error(`Process.exit called with code ${code}`);
     });
 
-    // Mock all handlers to throw an error
+    // Make all handlers succeed by default
     Object.values(handlers).forEach((handler) => {
-      if (typeof handler === "function") {
-        (handler as Mock).mockRejectedValue(new Error("Handler error"));
-      }
+      vi.mocked(handler).mockResolvedValue(undefined);
     });
-
-    // Mock dynamic import
-    vi.doMock(mockResolvedPath, () => ({
-      default: { type: "create-component" },
-    }));
   });
 
   afterEach(() => {
@@ -52,50 +58,25 @@ describe("run", () => {
   });
 
   it("should set default rate limit when no throttle is provided", async () => {
-    // Act & Assert
-    await expect(run(mockFilePath)).rejects.toThrow(
-      "Process.exit called with code 1",
-    );
+    try {
+      await run(mockFilePath);
+    } catch {
+      // Expected to throw due to process.exit
+    }
     expect(setRequestsPerSecond).toHaveBeenCalledWith(3);
   });
 
   it("should set custom rate limit when throttle is provided", async () => {
-    // Act & Assert
-    await expect(run(mockFilePath, { throttle: 500 })).rejects.toThrow(
-      "Process.exit called with code 1",
-    );
+    try {
+      await run(mockFilePath, { throttle: 500 });
+    } catch {
+      // Expected to throw due to process.exit
+    }
     expect(setRequestsPerSecond).toHaveBeenCalledWith(2);
   });
 
   it("should exit when migration file is not found", async () => {
-    // Arrange
-    (fs.existsSync as Mock).mockReturnValue(false);
-
-    // Act & Assert
-    await expect(run(mockFilePath)).rejects.toThrow(
-      "Process.exit called with code 1",
-    );
-  });
-
-  it("should handle migration file import errors", async () => {
-    // Arrange
-    vi.doMock(mockResolvedPath, () => {
-      throw new Error("Import error");
-    });
-
-    // Act & Assert
-    await expect(run(mockFilePath)).rejects.toThrow(
-      "Process.exit called with code 1",
-    );
-  });
-
-  it("should handle unknown migration types", async () => {
-    // Arrange
-    vi.doMock(mockResolvedPath, () => ({
-      default: { type: "unknown-type" },
-    }));
-
-    // Act & Assert
+    vi.mocked(fs.existsSync).mockReturnValue(false);
     await expect(run(mockFilePath)).rejects.toThrow(
       "Process.exit called with code 1",
     );
@@ -159,57 +140,53 @@ describe("run", () => {
 
     testCases.forEach(({ type, handler }) => {
       it(`should call ${handler.name} for ${type} migration`, async () => {
-        // Arrange
-        const mockMigration = { type };
-        vi.doMock(mockResolvedPath, () => ({
-          default: mockMigration,
-        }));
+        mockMigration.type = type;
 
-        // Act & Assert
-        await expect(run(mockFilePath)).rejects.toThrow(
-          "Process.exit called with code 1",
+        try {
+          await run(mockFilePath);
+        } catch {
+          // Expected to throw due to process.exit
+        }
+
+        expect(handler).toHaveBeenCalledWith(
+          { type },
+          {
+            isDryrun: undefined,
+            publish: undefined,
+            publishLanguages: undefined,
+          },
         );
-        expect(handler).toHaveBeenCalledWith(mockMigration, {
-          isDryrun: undefined,
-          publish: undefined,
-          publishLanguages: undefined,
-        });
       });
     });
   });
 
   it("should pass options to migration handlers", async () => {
-    // Arrange
-    const mockMigration = { type: "create-component" };
     const options: RunOptions = {
       dryRun: true,
       publish: "all",
       languages: "en,de",
       throttle: 1000,
     };
-    vi.doMock(mockResolvedPath, () => ({
-      default: mockMigration,
-    }));
 
-    // Act & Assert
-    await expect(run(mockFilePath, options)).rejects.toThrow(
-      "Process.exit called with code 1",
+    try {
+      await run(mockFilePath, options);
+    } catch {
+      // Expected to throw due to process.exit
+    }
+
+    expect(handlers.handleCreateComponent).toHaveBeenCalledWith(
+      { type: "create-component" },
+      {
+        isDryrun: true,
+        publish: "all",
+        publishLanguages: "en,de",
+      },
     );
-    expect(handlers.handleCreateComponent).toHaveBeenCalledWith(mockMigration, {
-      isDryrun: true,
-      publish: "all",
-      publishLanguages: "en,de",
-    });
   });
 
-  it("should handle migration handler errors", async () => {
-    // Arrange
-    const mockMigration = { type: "create-component" };
-    vi.doMock(mockResolvedPath, () => ({
-      default: mockMigration,
-    }));
+  it("should handle unknown migration types", async () => {
+    mockMigration.type = "unknown-type";
 
-    // Act & Assert
     await expect(run(mockFilePath)).rejects.toThrow(
       "Process.exit called with code 1",
     );

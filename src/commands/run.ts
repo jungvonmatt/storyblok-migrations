@@ -6,6 +6,8 @@ import { select } from "@inquirer/prompts";
 import { RunMigrationOptions, findMigrations } from "../utils/migration";
 import { setRequestsPerSecond } from "../utils/api";
 import { RunOptions } from "../types/migration";
+import { createJiti } from "jiti";
+
 import {
   handleCreateComponentGroup,
   handleCreateComponent,
@@ -21,6 +23,9 @@ import {
   handleDeleteDatasource,
   handleTransformEntries,
 } from "../handlers";
+
+// Initialize jiti with the current working directory
+const jiti = createJiti(process.cwd());
 
 export async function run(filePath?: string, options: RunOptions = {}) {
   // Apply rate limiting if provided
@@ -66,7 +71,11 @@ export async function run(filePath?: string, options: RunOptions = {}) {
   }
 
   try {
-    const migrationModule = await import(resolvedPath);
+    // Use jiti to load the migration file
+    const migrationModule = (await jiti.import(resolvedPath)) as {
+      default?: any;
+      [key: string]: any;
+    };
     const migration = migrationModule.default || migrationModule;
 
     // Common options for all migration types
