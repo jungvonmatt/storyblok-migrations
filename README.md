@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://github.com/jungvonmatt/storyblok-migrations/actions/workflows/test.yaml/badge.svg)](https://github.com/jungvonmatt/storyblok-migrations/actions/workflows/test.yaml)
 
-Sb Migrate extends the core functionality of [Storyblok's CLI](https://github.com/storyblok/storyblok-cli) by providing a modern and simple command-line tool for creating, running, and managing not only content migrations but also schema migrations. It makes it easy and safe to deploy changes to your content model in a way that can be reviewed and tested before being deployed to production. This approach enables teams to evolve their content structure confidently, with greater control and traceability throughout the development lifecycle.
+Sb Migrate extends the core functionality of [Storyblok's CLI](https://github.com/storyblok/storyblok-cli) by providing a modern and simple command-line tool for creating, running, and managing not only content migrations but also schema migrations. It makes it easy and safe to deploy changes to your content model in a way that can be reviewed and tested before being deployed to production. This approach enables teams to evolve their content structure confidently, with greater control and traceability throughout the development lifecycle. With full TypeScript support for migration files, developers can leverage type checking and autocompletion to ensure their migrations are correctly structured and free of errors, making the development process more robust and efficient.
 
 ## Features
 
@@ -31,6 +31,7 @@ Sb Migrate extends the core functionality of [Storyblok's CLI](https://github.co
 - **JSDoc** - Documentation generator
 - **ESLint** - Linting tool
 - **Prettier** - Code formatter
+- **Jiti** - ESM module loader for Node.js
 
 ## Getting Started
 
@@ -118,29 +119,28 @@ sb-migrate login
 
 ## Commands
 
-| Name                                    | Options                                                                                                                                                                                                                                        | Description                                                                                                                                                                                                            |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `help`                                  | None                                                                                                                                                                                                                                           | Displays help information about available commands and their usage.                                                                                                                                                    |
-| `config`                                | None                                                                                                                                                                                                                                           | Sets up Storyblok credentials (Space ID and OAuth Token). Checks for existing configuration in `.storyblokrc.json` or environment variables, prompts to verify/update configuration, and saves to `.storyblokrc.json`. |
-| `login`                                 | None                                                                                                                                                                                                                                           | Authenticates with Storyblok using configured OAuth token. Verifies Storyblok CLI installation and sets region to EU by default.                                                                                       |
-| `npx storyblok logout`                  | None                                                                                                                                                                                                                                           | Logs out from Storyblok.                                                                                                                                                                                               |
-| `pull-components`                       | None                                                                                                                                                                                                                                           | Downloads component schemas from Storyblok space. Verifies Storyblok CLI installation and saves schemas to `components.[space-id].json`.                                                                               |
-| `generate-types`                        | None                                                                                                                                                                                                                                           | Generates TypeScript type definitions from component schemas. Creates types in `storyblok/types/storyblok.gen.d.ts` with proper imports and type extensions.                                                           |
-| `generate-migration`                    | `-t, --type`: Type of migration<br>`-n, --name`: Name of the migration                                                                                                                                                                         | Creates a new migration file. Prompts for migration type (schema/content) and name, creates timestamped file with template.                                                                                            |
-| `run <relative path to migration-file>` | `-d, --dry-run`: Preview changes<br>`-s, --space <id>`: Space ID<br>`-t, --token <token>`: OAuth token<br>`-p, --publish <mode>`: Publish mode<br>`-l, --languages <langs>`: Languages to publish<br>`--throttle <ms>`: Delay between requests | Runs a schema or content migration file against Storyblok. Supports various options for controlling the migration process.                                                                                             |
+| Name                           | Options                                                                                                                                                                                                                                        | Description                                                                                                                                                                                                            |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `help`                         | None                                                                                                                                                                                                                                           | Displays help information about available commands and their usage.                                                                                                                                                    |
+| `config`                       | None                                                                                                                                                                                                                                           | Sets up Storyblok credentials (Space ID and OAuth Token). Checks for existing configuration in `.storyblokrc.json` or environment variables, prompts to verify/update configuration, and saves to `.storyblokrc.json`. |
+| `login`                        | None                                                                                                                                                                                                                                           | Authenticates with Storyblok using configured OAuth token. Verifies Storyblok CLI installation and sets region to EU by default.                                                                                       |
+| `pull-components`              | None                                                                                                                                                                                                                                           | Downloads component schemas from Storyblok space. Verifies Storyblok CLI installation and saves schemas to `components.[space-id].json`.                                                                               |
+| `generate-types`               | None                                                                                                                                                                                                                                           | Generates TypeScript type definitions from component schemas. Creates types in `storyblok/types/storyblok.gen.d.ts` with proper imports and type extensions.                                                           |
+| `generate-migration`           | `-t, --type`: Type of migration<br>`-n, --name`: Name of the migration                                                                                                                                                                         | Creates a new migration file. Prompts for migration type (schema/content) and name, creates timestamped file with template.                                                                                            |
+| `run [path to migration file]` | `-d, --dry-run`: Preview changes<br>`-s, --space <id>`: Space ID<br>`-t, --token <token>`: OAuth token<br>`-p, --publish <mode>`: Publish mode<br>`-l, --languages <langs>`: Languages to publish<br>`--throttle <ms>`: Delay between requests | Runs a schema or content migration file against Storyblok. Provide the path to the migration file (e.g., `migrations/02-create-datasource.ts`). If no filename is provided, you can select from available migrations.  |
 
 ## Migrations
 
 In this section you can see how to create migrations for schema and content migrations.
 
-> When creating migrations, the file must have a `.js` extension to be executed by `sb-migrate`. Thanks to `JSDoc` documentation for all important functions, you'll still benefit from autocompletion and type safety in your IDE.
+> When creating migrations, the file must have a `.js` or `.ts` extension to be executed by `sb-migrate`. Thanks to `JSDoc` documentation for all important functions, you'll still benefit from autocompletion and type safety in your IDE when using `.js` files but we recommend using TypeScript `.ts` to get full type safety and autocompletion.
 
 ### Type-Safe Migrations
 
 The `defineMigration` function provides full TypeScript support for creating any type of migration:
 
-```javascript
-// migrations/create-component.js
+```typescript
+// migrations/create-component.ts
 import { defineMigration, textField } from "sb-migrate";
 
 export default defineMigration({
@@ -213,7 +213,8 @@ When creating or updating components with `create-component` or `update-componen
 
 Example usage in a migration:
 
-```javascript
+```typescript
+// migrations/create-feature-card.ts
 import {
   defineMigration,
   textField,
@@ -256,7 +257,8 @@ These helper functions provide proper TypeScript typing, validation, and documen
 
 The most powerful way to perform content migrations is using the `transform-entries` type:
 
-```javascript
+```typescript
+// migrations/transform-entries.ts
 import { defineMigration } from "sb-migrate";
 
 export default defineMigration({
