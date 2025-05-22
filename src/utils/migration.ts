@@ -1,4 +1,6 @@
 import pc from "picocolors";
+import fs from "fs";
+import path from "path";
 import {
   IComponent,
   IComponentSchemaItem,
@@ -389,4 +391,41 @@ export function defineMigration<T extends MigrationType>(
   migration: Extract<Migration, { type: T }>,
 ): Extract<Migration, { type: T }> {
   return migration;
+}
+
+/**
+ * Finds all migration files (.js and .ts) in the migrations directory and its subdirectories
+ * @returns Array of relative paths to migration files
+ */
+export async function findMigrations(): Promise<string[]> {
+  const migrationsDir = path.join(process.cwd(), "migrations");
+  if (!fs.existsSync(migrationsDir)) {
+    return [];
+  }
+
+  const migrations: string[] = [];
+
+  // Recursively find all .js and .ts files in the migrations directory
+  function findFiles(dir: string, basePath: string = "") {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      const relativePath = path.join(basePath, entry.name);
+
+      if (entry.isDirectory()) {
+        // Recursively search subdirectories
+        findFiles(fullPath, relativePath);
+      } else if (
+        entry.isFile() &&
+        (entry.name.endsWith(".js") || entry.name.endsWith(".ts"))
+      ) {
+        // Add .js and .ts files to the list
+        migrations.push(relativePath);
+      }
+    }
+  }
+
+  findFiles(migrationsDir);
+  return migrations.sort();
 }
