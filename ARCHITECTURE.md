@@ -28,7 +28,7 @@ Each command is implemented as a separate module in the `/src/commands/` directo
 
 ### Migration Handlers
 
-Migration logic is organized in `/src/handlers/` by entity type:
+Migration logic is organized in `/src/handlers/` by entity type. Each handler is responsible for a specific entity type and contains the logic for interacting with the Storyblok API to perform migrations.
 
 - `component/`: Handlers for component schema operations
 - `componentGroup/`: Handlers for component group operations
@@ -38,7 +38,7 @@ Migration logic is organized in `/src/handlers/` by entity type:
 
 ### Type Definitions
 
-The type system in `/src/types/` provides the full type support for migrations:
+The type system in `/src/types/` provides the full type support for migrations, with type definitions derived from the [Storyblok Management API](https://www.storyblok.com/docs/api/management/getting-started) specifications.
 
 - `migration.ts`: Defines all migration types (create/update/delete operations)
 - `IComponent.ts`: Component schema structure
@@ -141,15 +141,6 @@ Each operation is implemented as a separate command, following the Command desig
 ### Adapter Pattern
 
 Storyblok API interactions are abstracted behind handlers, making it easier to maintain compatibility with API changes.
-
-## Dependencies
-
-- **Commander.js**: Command-line interface framework
-- **Inquirer.js**: Interactive command-line prompts
-- **Cosmiconfig**: Configuration file loader
-- **TypeScript**: For static typing
-- **Storyblok API Client**: For API interactions
-- **Storyblok CLI**: For authentication and some operations
 
 ## Extension Points
 
