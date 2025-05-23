@@ -16,6 +16,7 @@ Sb Migrate is a command-line tool that extends [Storyblok's CLI](https://github.
 - Run Schema Migrations
 - Run Content Migrations
 - Full TypeScript support for migrations
+- Version controlled migrations for tracking changes and collaboration
 
 ## Built with
 
