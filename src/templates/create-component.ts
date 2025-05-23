@@ -1,4 +1,8 @@
-import { defineMigration, textField, customField } from "sb-migrate";
+import {
+  defineMigration,
+  textField,
+  customField,
+} from "@jungvonmatt/sb-migrate";
 
 /*
 

@@ -23,5 +23,5 @@
     "rewriteRelativeImportExtensions": true
   },
   "include": ["src/**/*", "bin/**/*"],
-  "exclude": ["node_modules", "dist", "src/templates/*.js"]
+  "exclude": ["node_modules", "dist", "src/templates"]
 }

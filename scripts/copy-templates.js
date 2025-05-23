@@ -1,5 +1,5 @@
 /**
- * Script to copy JavaScript template files from src/templates to dist/templates
+ * Script to copy TypeScript template files from src/templates to dist/templates and dist/src/templates
  *
  * This ensures that template files are available in their original, readable format
  * and are not processed by TypeScript, giving us cleaner migration file output.
@@ -8,23 +8,32 @@
 const fs = require("fs");
 const path = require("path");
 
-// Create the dist/templates directory if it doesn't exist
+// Create both destination directories if they don't exist
 const templatesDir = path.join(__dirname, "..", "dist", "templates");
-if (!fs.existsSync(templatesDir)) {
-  fs.mkdirSync(templatesDir, { recursive: true });
-}
+const srcTemplatesDir = path.join(__dirname, "..", "dist", "src", "templates");
+
+[templatesDir, srcTemplatesDir].forEach((dir) => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+});
 
 // Get the source templates directory and list all files
-const srcTemplatesDir = path.join(__dirname, "..", "src", "templates");
-const files = fs.readdirSync(srcTemplatesDir);
+const sourceTemplatesDir = path.join(__dirname, "..", "src", "templates");
+const files = fs.readdirSync(sourceTemplatesDir);
 
-// Copy each JavaScript file from source to destination
+// Copy each TypeScript file from source to both destinations
 files.forEach((file) => {
-  const srcPath = path.join(srcTemplatesDir, file);
-  const destPath = path.join(templatesDir, file);
+  const srcPath = path.join(sourceTemplatesDir, file);
+  const destPaths = [
+    path.join(templatesDir, file),
+    path.join(srcTemplatesDir, file),
+  ];
 
-  if (file.endsWith(".js")) {
-    fs.copyFileSync(srcPath, destPath);
-    console.log(`Copied ${srcPath} to ${destPath}`);
+  if (file.endsWith(".ts")) {
+    destPaths.forEach((destPath) => {
+      fs.copyFileSync(srcPath, destPath);
+      console.log(`Copied ${srcPath} to ${destPath}`);
+    });
   }
 });

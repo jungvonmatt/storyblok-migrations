@@ -1,8 +1,8 @@
-import { defineMigration } from "sb-migrate";
+import { defineMigration } from "@jungvonmatt/sb-migrate";
 
 export default defineMigration({
-  type: "delete-datasource",
+  type: "delete-story",
   description: "{{migrationName}}",
   // Can be either a numeric ID or a slug
-  id: "example-datasource",
+  id: "example-page",
 });

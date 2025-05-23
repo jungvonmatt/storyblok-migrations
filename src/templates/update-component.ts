@@ -1,4 +1,8 @@
-import { defineMigration, customField, optionField } from "sb-migrate";
+import {
+  defineMigration,
+  customField,
+  optionField,
+} from "@jungvonmatt/sb-migrate";
 
 export default defineMigration({
   type: "update-component",

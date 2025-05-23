@@ -17,7 +17,7 @@ vi.mock("picocolors", () => ({
 }));
 
 // Mock some of the migration templates
-const SCHEMA_TEMPLATE = `import { defineMigration } from "sb-migrate";
+const SCHEMA_TEMPLATE = `import { defineMigration } from "@jungvonmatt/sb-migrate";
 
 export default defineMigration({
   type: "{{migrationType}}",
@@ -25,7 +25,7 @@ export default defineMigration({
   // Schema migration template content
 });`;
 
-const CONTENT_TEMPLATE = `import { defineMigration } from "sb-migrate";
+const CONTENT_TEMPLATE = `import { defineMigration } from "@jungvonmatt/sb-migrate";
 
 export default defineMigration({
   type: "{{migrationType}}",
@@ -33,7 +33,7 @@ export default defineMigration({
   // Content migration template content
 });`;
 
-const CREATE_COMPONENT_TEMPLATE = `import { defineMigration, textField, customField } from "sb-migrate";
+const CREATE_COMPONENT_TEMPLATE = `import { defineMigration, textField, customField } from "@jungvonmatt/sb-migrate";
 
 export default defineMigration({
   type: "create-component",
@@ -46,7 +46,7 @@ export default defineMigration({
 });`;
 
 // Add more template mocks
-const DATASOURCE_TEMPLATE = `import { defineMigration } from "sb-migrate";
+const DATASOURCE_TEMPLATE = `import { defineMigration } from "@jungvonmatt/sb-migrate";
 
 export default defineMigration({
   type: "{{migrationType}}",
@@ -54,7 +54,7 @@ export default defineMigration({
   // Datasource migration template content
 });`;
 
-const COMPONENT_GROUP_TEMPLATE = `import { defineMigration } from "sb-migrate";
+const COMPONENT_GROUP_TEMPLATE = `import { defineMigration } from "@jungvonmatt/sb-migrate";
 
 export default defineMigration({
   type: "{{migrationType}}",
@@ -79,7 +79,7 @@ describe("generate-migration command", () => {
     // Mock file system operations
     vi.mocked(fs.existsSync).mockImplementation((path) => {
       const pathStr = String(path);
-      if (pathStr.includes("templates") && pathStr.includes(".js")) {
+      if (pathStr.includes("templates") && pathStr.includes(".ts")) {
         return true;
       }
       return false;
@@ -87,23 +87,25 @@ describe("generate-migration command", () => {
 
     vi.mocked(fs.readFileSync).mockImplementation((path) => {
       const pathStr = String(path);
-      if (pathStr.includes("schema-migration.js")) {
+      if (pathStr.includes("schema-migration.ts")) {
         return SCHEMA_TEMPLATE;
-      } else if (pathStr.includes("content-migration.js")) {
+      } else if (pathStr.includes("content-migration.ts")) {
         return CONTENT_TEMPLATE;
-      } else if (pathStr.includes("create-component.js")) {
+      } else if (pathStr.includes("create-component.ts")) {
         return CREATE_COMPONENT_TEMPLATE;
+      } else if (pathStr.includes("create-story.ts")) {
+        return CONTENT_TEMPLATE;
       } else if (
-        pathStr.includes("datasource-migration.js") ||
-        pathStr.includes("create-datasource.js")
+        pathStr.includes("datasource-migration.ts") ||
+        pathStr.includes("create-datasource.ts")
       ) {
         return DATASOURCE_TEMPLATE;
       } else if (
         pathStr.includes("component-group") ||
-        pathStr.includes("create-component-group.js")
+        pathStr.includes("create-component-group.ts")
       ) {
         return COMPONENT_GROUP_TEMPLATE;
-      } else if (pathStr.includes("migration.js")) {
+      } else if (pathStr.includes("migration.ts")) {
         // For any other migration type, return appropriate template
         return pathStr.includes("schema") ? SCHEMA_TEMPLATE : CONTENT_TEMPLATE;
       }
@@ -156,11 +158,11 @@ describe("generate-migration command", () => {
       });
 
       expect(fs.writeFileSync).toHaveBeenCalledWith(
-        expect.stringContaining("20230101120000-test-component.js"),
+        expect.stringContaining("20230101120000-test-component.ts"),
         expect.stringContaining('type: "create-component"'),
       );
       expect(fs.writeFileSync).toHaveBeenCalledWith(
-        expect.stringContaining("20230101120000-test-component.js"),
+        expect.stringContaining("20230101120000-test-component.ts"),
         expect.stringContaining('description: "test-component"'),
       );
     });
@@ -172,11 +174,11 @@ describe("generate-migration command", () => {
       });
 
       expect(fs.writeFileSync).toHaveBeenCalledWith(
-        expect.stringContaining("20230101120000-test-story.js"),
+        expect.stringContaining("20230101120000-test-story.ts"),
         expect.stringContaining('type: "create-story"'),
       );
       expect(fs.writeFileSync).toHaveBeenCalledWith(
-        expect.stringContaining("20230101120000-test-story.js"),
+        expect.stringContaining("20230101120000-test-story.ts"),
         expect.stringContaining('description: "test-story"'),
       );
     });
@@ -188,11 +190,11 @@ describe("generate-migration command", () => {
       });
 
       expect(fs.writeFileSync).toHaveBeenCalledWith(
-        expect.stringContaining("20230101120000-test-datasource.js"),
+        expect.stringContaining("20230101120000-test-datasource.ts"),
         expect.stringContaining('type: "create-datasource"'),
       );
       expect(fs.writeFileSync).toHaveBeenCalledWith(
-        expect.stringContaining("20230101120000-test-datasource.js"),
+        expect.stringContaining("20230101120000-test-datasource.ts"),
         expect.stringContaining('description: "test-datasource"'),
       );
     });
@@ -202,7 +204,7 @@ describe("generate-migration command", () => {
       vi.mocked(fs.existsSync).mockImplementation((path) => {
         const pathStr = String(path);
         // Return true for the src/templates path to simulate finding the template
-        return pathStr.includes("src/templates/create-component.js");
+        return pathStr.includes("src/templates/create-component.ts");
       });
 
       await generateMigration({
@@ -215,19 +217,15 @@ describe("generate-migration command", () => {
         .mocked(fs.existsSync)
         .mock.calls.map((call) => String(call[0]));
 
-      // Log the actual paths for debugging
-      console.log("Checked paths:", checkedPaths);
-
       // Verify that the command tried to find the template in the expected locations
-      // The paths will be absolute paths, so we need to check for the relative part
       const hasSrcTemplate = checkedPaths.some((p) =>
-        p.includes("/src/templates/create-component.js"),
+        p.includes("/src/templates/create-component.ts"),
       );
       const hasDistTemplate = checkedPaths.some((p) =>
-        p.includes("/dist/templates/create-component.js"),
+        p.includes("/dist/templates/create-component.ts"),
       );
       const hasCategoryTemplate = checkedPaths.some((p) =>
-        p.includes("/templates/schema-migration.js"),
+        p.includes("/templates/schema-migration.ts"),
       );
 
       // At least one of these paths should have been checked
@@ -289,7 +287,7 @@ describe("generate-migration command", () => {
       expect.any(Object),
     );
     expect(fs.writeFileSync).toHaveBeenCalledWith(
-      expect.stringContaining("20230101120000-test-migration.js"),
+      expect.stringContaining("20230101120000-test-migration.ts"),
       expect.stringContaining('description: "test-migration"'),
     );
     expect(consoleLogSpy).toHaveBeenCalledWith(
@@ -323,7 +321,7 @@ describe("generate-migration command", () => {
       expect.any(Object),
     );
     expect(fs.writeFileSync).toHaveBeenCalledWith(
-      expect.stringContaining("20230101120000-test-migration.js"),
+      expect.stringContaining("20230101120000-test-migration.ts"),
       expect.stringContaining('description: "test-migration"'),
     );
   });
@@ -359,7 +357,7 @@ describe("generate-migration command", () => {
       expect.any(Object),
     );
     expect(fs.writeFileSync).toHaveBeenCalledWith(
-      expect.stringContaining("20230101120000-cli-option-test.js"),
+      expect.stringContaining("20230101120000-cli-option-test.ts"),
       expect.any(String),
     );
   });

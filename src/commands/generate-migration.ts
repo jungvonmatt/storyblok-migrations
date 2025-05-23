@@ -117,33 +117,13 @@ export async function generateMigration(
     const filePath = path.join(migrationsDir, fileName);
 
     // Get template for the specific migration type
-    const templateFilename = `${migrationType}.js`;
+    const templateFilename = `${migrationType}.ts`;
 
     const templatePaths = [
       path.join(process.cwd(), "src", "templates", templateFilename),
       path.join(process.cwd(), "dist", "templates", templateFilename),
-      path.join(
-        __dirname,
-        "..",
-        "..",
-        "..",
-        "src",
-        "templates",
-        templateFilename,
-      ),
+      path.join(process.cwd(), "dist", "src", "templates", templateFilename),
       path.join(__dirname, "..", "templates", templateFilename),
-      path.join(process.cwd(), "src", "templates", `${category}-migration.js`),
-      path.join(process.cwd(), "dist", "templates", `${category}-migration.js`),
-      path.join(
-        __dirname,
-        "..",
-        "..",
-        "..",
-        "src",
-        "templates",
-        `${category}-migration.js`,
-      ),
-      path.join(__dirname, "..", "templates", `${category}-migration.js`),
     ];
 
     let templateContent = null;
@@ -173,9 +153,11 @@ export async function generateMigration(
       migrationType,
     });
 
-    fs.writeFileSync(filePath, finalTemplate);
+    // Write the migration file with .ts extension
+    const migrationFilePath = filePath.replace(".js", ".ts");
+    fs.writeFileSync(migrationFilePath, finalTemplate);
 
-    console.log(pc.green(`✓ Migration created at ${filePath}`));
+    console.log(pc.green(`✓ Migration created at ${migrationFilePath}`));
   } catch (error) {
     console.error(pc.red(`✗ Failed to generate migration: ${error}`));
     process.exit(1);
