@@ -30,9 +30,6 @@ const createRequestQueue = (initialRequestsPerSecond = 3) => {
   const setRequestsPerSecond = (requestsPerSecond: number): void => {
     if (requestsPerSecond <= 0) return;
     interval = Math.floor(1000 / requestsPerSecond);
-    console.log(
-      `Rate limit set to ${requestsPerSecond} requests per second (${interval}ms between requests)`,
-    );
   };
 
   const processQueue = async (): Promise<void> => {
