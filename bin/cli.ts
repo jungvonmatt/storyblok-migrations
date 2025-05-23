@@ -7,6 +7,7 @@ import { pullComponents } from "../src/commands/pull-components";
 import { generateTypes } from "../src/commands/generate-types";
 import { generateMigration } from "../src/commands/generate-migration";
 import { run } from "../src/commands/run";
+import pkg from "../package.json";
 
 const program = new Command();
 
@@ -15,7 +16,7 @@ program
   .description(
     "CLI tool for managing Storyblok schema and content migrations with TypeScript support.",
   )
-  .version("0.1.0");
+  .version(pkg.version);
 
 program
   .command("config")
