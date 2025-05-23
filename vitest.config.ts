@@ -10,5 +10,10 @@ export default defineConfig({
     },
     include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
     exclude: ["node_modules", "dist"],
+    setupFiles: ["./src/__tests__/setup.ts"],
+    silent: true,
+    onConsoleLog() {
+      return false;
+    },
   },
 });

@@ -15,6 +15,7 @@ import type { Mock } from "vitest";
 import { IComponent, IComponentSchemaItem } from "../../types/IComponent";
 import { processMigration } from "../../utils/storyblok";
 import fs from "fs";
+import { getConsoleOutput, clearConsoleOutput } from "../setup";
 
 // Mock dependencies
 vi.mock("../../utils/api", () => ({
@@ -251,10 +252,8 @@ describe("Migration Utilities", () => {
   });
 
   describe("showMigrationChanges", () => {
-    const consoleSpy = vi.spyOn(console, "log");
-
     beforeEach(() => {
-      consoleSpy.mockClear();
+      clearConsoleOutput();
     });
 
     it("should show created field", async () => {
@@ -266,9 +265,11 @@ describe("Migration Utilities", () => {
       await showMigrationChanges(field, value, undefined);
 
       // Assert
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Created field "newField"'),
-      );
+      const output = getConsoleOutput();
+      expect(output).toContainEqual({
+        type: "log",
+        args: [expect.stringContaining('Created field "newField"')],
+      });
     });
 
     it("should show removed field", async () => {
@@ -280,9 +281,11 @@ describe("Migration Utilities", () => {
       await showMigrationChanges(field, undefined, oldValue);
 
       // Assert
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Removed the field "oldField"'),
-      );
+      const output = getConsoleOutput();
+      expect(output).toContainEqual({
+        type: "log",
+        args: [expect.stringContaining('Removed the field "oldField"')],
+      });
     });
 
     it("should show updated field", async () => {
@@ -295,9 +298,11 @@ describe("Migration Utilities", () => {
       await showMigrationChanges(field, newValue, oldValue);
 
       // Assert
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Updated field "field"'),
-      );
+      const output = getConsoleOutput();
+      expect(output).toContainEqual({
+        type: "log",
+        args: [expect.stringContaining('Updated field "field"')],
+      });
     });
   });
 

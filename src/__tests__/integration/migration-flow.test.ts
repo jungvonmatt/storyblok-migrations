@@ -31,6 +31,7 @@ import {
 } from "../../handlers";
 import type { IComponent } from "../../types/IComponent";
 import type { IDataSource } from "../../types/IDataSource";
+import { getConsoleOutput, clearConsoleOutput } from "../setup";
 
 // Mock the external API calls
 vi.mock("../../utils/api", () => {
@@ -107,6 +108,7 @@ describe("Integration Tests: Migration Flow", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    clearConsoleOutput();
 
     // Mock API responses with correct structure
     (api.components.getAll as Mock).mockResolvedValue({
@@ -196,6 +198,28 @@ describe("Integration Tests: Migration Flow", () => {
 
     expect(api.components.create).toHaveBeenCalled();
     expect(api.components.update).toHaveBeenCalled();
+
+    const output = getConsoleOutput();
+    expect(output).toContainEqual({
+      type: "log",
+      args: [expect.stringContaining("Creating component: test-component")],
+    });
+    expect(output).toContainEqual({
+      type: "log",
+      args: [
+        expect.stringContaining(
+          "Updating fields for component: test-component",
+        ),
+      ],
+    });
+    expect(output).toContainEqual({
+      type: "log",
+      args: [
+        expect.stringContaining(
+          "Component created successfully: test-component",
+        ),
+      ],
+    });
   });
 
   it("should handle component deletion flow", async () => {

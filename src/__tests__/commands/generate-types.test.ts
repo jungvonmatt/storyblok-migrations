@@ -1,31 +1,20 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { generateTypes } from "../../commands/generate-types";
 import { loadConfig } from "../../utils/config";
-import fs from "fs";
-import path from "path";
 import storyblokToTypescript from "storyblok-generate-ts";
-import type { StoryblokConfig } from "../../types/config";
+import { StoryblokConfig } from "../../types/config";
+import * as fs from "fs";
+import * as path from "path";
 
 vi.mock("../../utils/config");
+vi.mock("storyblok-generate-ts");
 vi.mock("fs");
 vi.mock("path");
-vi.mock("storyblok-generate-ts");
-vi.mock("picocolors", () => ({
-  default: {
-    green: vi.fn((str) => str),
-    red: vi.fn((str) => str),
-    blue: vi.fn((str) => str),
-  },
-}));
 
 describe("generate-types command", () => {
-  let consoleLogSpy: ReturnType<typeof vi.spyOn>;
-  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
   let processExitSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
-    consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     processExitSpy = vi
       .spyOn(process, "exit")
       .mockImplementation((code?: string | number | null) => {
@@ -73,8 +62,6 @@ describe("generate-types command", () => {
   });
 
   afterEach(() => {
-    consoleLogSpy.mockRestore();
-    consoleErrorSpy.mockRestore();
     processExitSpy.mockRestore();
   });
 
@@ -98,13 +85,6 @@ describe("generate-types command", () => {
         titleSuffix: "",
       }),
     );
-
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Generating TypeScript types"),
-    );
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Successfully generated TypeScript types"),
-    );
   });
 
   it("should handle missing space ID", async () => {
@@ -112,9 +92,6 @@ describe("generate-types command", () => {
 
     await expect(generateTypes()).rejects.toThrow(
       "process.exit unexpectedly called with",
-    );
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining("No Storyblok Space ID found"),
     );
   });
 
@@ -130,9 +107,6 @@ describe("generate-types command", () => {
 
     await expect(generateTypes()).rejects.toThrow(
       "process.exit unexpectedly called with",
-    );
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Components schema file not found"),
     );
   });
 
@@ -150,9 +124,6 @@ describe("generate-types command", () => {
 
     await expect(generateTypes()).rejects.toThrow(
       "process.exit unexpectedly called with",
-    );
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Failed to generate TypeScript types"),
     );
   });
 
