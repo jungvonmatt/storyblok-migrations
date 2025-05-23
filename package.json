@@ -44,7 +44,6 @@
     "eslint-config-prettier": "^10.1.1",
     "husky": "^9.1.7",
     "prettier": "3.5.3",
-    "storyblok-generate-ts": "^2.2.0",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.26.1",
     "vitest": "^3.0.4"
@@ -60,6 +59,7 @@
     "lodash": "^4.17.21",
     "picocolors": "^1.1.1",
     "storyblok": "^3.35.2",
+    "storyblok-generate-ts": "^2.2.0",
     "storyblok-js-client": "^6.10.8",
     "type-fest": "^4.37.0"
   }
