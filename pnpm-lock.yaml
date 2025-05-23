@@ -38,6 +38,9 @@ importers:
       storyblok:
         specifier: ^3.35.2
         version: 3.36.1
+      storyblok-generate-ts:
+        specifier: ^2.2.0
+        version: 2.2.0(postcss@8.5.3)(typescript@5.8.3)
       storyblok-js-client:
         specifier: ^6.10.8
         version: 6.10.11
@@ -66,9 +69,6 @@ importers:
       prettier:
         specifier: 3.5.3
         version: 3.5.3
-      storyblok-generate-ts:
-        specifier: ^2.2.0
-        version: 2.2.0(postcss@8.5.3)(typescript@5.8.3)
       typescript:
         specifier: ^5.8.2
         version: 5.8.3
