@@ -72,6 +72,10 @@ Make sure to configure Storyblok before testing the package locally. Please refe
 
 ### Testing
 
+#### Example Migrations
+
+You can find example migrations for every type of migration in the [examples](examples) folder. You can also use the `generate-migration` command to create a new migration. Just setup your Storyblok account and give it a try.
+
 #### Run tests
 
 ```bash
