@@ -52,21 +52,21 @@ Sb Migrate extends the core functionality of [Storyblok's CLI](https://github.co
 #### Global Installation
 
 ```bash
-npm install -g sb-migrate
+npm install -g @jungvonmatt/sb-migrate
 # or
-yarn global add sb-migrate
+yarn global add @jungvonmatt/sb-migrate
 # or
-pnpm add -g sb-migrate
+pnpm add -g @jungvonmatt/sb-migrate
 ```
 
 #### Local Installation
 
 ```bash
-npm install sb-migrate
+npm install @jungvonmatt/sb-migrate
 # or
-yarn add sb-migrate
+yarn add @jungvonmatt/sb-migrate
 # or
-pnpm add sb-migrate
+pnpm add @jungvonmatt/sb-migrate
 ```
 
 #### Configuration
@@ -141,7 +141,7 @@ The `defineMigration` function provides full TypeScript support for creating any
 
 ```typescript
 // migrations/create-component.ts
-import { defineMigration, textField } from "sb-migrate";
+import { defineMigration, textField } from "@jungvonmatt/sb-migrate";
 
 export default defineMigration({
   type: "create-component",
@@ -220,7 +220,7 @@ import {
   textField,
   richtextField,
   booleanField,
-} from "sb-migrate";
+} from "@jungvonmatt/sb-migrate";
 
 export default defineMigration({
   type: "create-component",
@@ -259,7 +259,7 @@ The most powerful way to perform content migrations is using the `transform-entr
 
 ```typescript
 // migrations/transform-entries.ts
-import { defineMigration } from "sb-migrate";
+import { defineMigration } from "@jungvonmatt/sb-migrate";
 
 export default defineMigration({
   type: "transform-entries",

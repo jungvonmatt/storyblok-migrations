@@ -33,7 +33,16 @@
     "type": "git",
     "url": "git+https://github.com/jungvonmatt/storyblok-migrations.git"
   },
-  "keywords": [],
+  "keywords": [
+    "storyblok",
+    "migration",
+    "cli",
+    "headless-cms",
+    "content-management",
+    "schema-migration",
+    "content-migration",
+    "typescript"
+  ],
   "author": "Constantin Unterkofler",
   "license": "MIT",
   "devDependencies": {
