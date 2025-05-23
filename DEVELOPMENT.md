@@ -2,6 +2,10 @@
 
 This section contains information about how to run, test and develop `sb-migrate` locally. If you want to contribute to the project, please read the [CONTRIBUTING.md](CONTRIBUTING.md) guidelines first.
 
+### Architecture
+
+To understand the architecture of the project, please refer to the [ARCHITECTURE.md](ARCHITECTURE.md) file.
+
 ### Requirements
 
 - Node.js 20.x or higher (use `.nvmrc` for auto-installation)
