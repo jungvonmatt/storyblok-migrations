@@ -3,7 +3,7 @@ import {
   optionField,
   richtextField,
   textField,
-} from "sb-migrate";
+} from "@jungvonmatt/sb-migrate";
 
 export default defineMigration({
   type: "create-component",

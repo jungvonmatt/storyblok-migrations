@@ -1,4 +1,4 @@
-import { defineMigration } from "sb-migrate";
+import { defineMigration } from "@jungvonmatt/sb-migrate";
 
 const entries = [
   { name: "Regular", value: "regular" },

@@ -1,4 +1,4 @@
-import { defineMigration } from "sb-migrate";
+import { defineMigration } from "@jungvonmatt/sb-migrate";
 
 const datasource = {
   name: "Headline Look",

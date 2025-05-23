@@ -1,4 +1,4 @@
-import { defineMigration, textField } from "sb-migrate";
+import { defineMigration, textField } from "@jungvonmatt/sb-migrate";
 
 export default defineMigration({
   type: "create-component",

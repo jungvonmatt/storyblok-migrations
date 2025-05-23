@@ -4,7 +4,7 @@ import {
   textField,
   textareaField,
   assetField,
-} from "sb-migrate";
+} from "@jungvonmatt/sb-migrate";
 
 export default defineMigration({
   type: "create-component",
