@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://github.com/jungvonmatt/storyblok-migrations/actions/workflows/test.yaml/badge.svg)](https://github.com/jungvonmatt/storyblok-migrations/actions/workflows/test.yaml)
 
-Sb Migrate extends the core functionality of [Storyblok's CLI](https://github.com/storyblok/storyblok-cli) by providing a modern and simple command-line tool for creating, running, and managing not only content migrations but also schema migrations. It makes it easy and safe to deploy changes to your content model in a way that can be reviewed and tested before being deployed to production. This approach enables teams to evolve their content structure confidently, with greater control and traceability throughout the development lifecycle. With full TypeScript support for migration files, developers can leverage type checking and autocompletion to ensure their migrations are correctly structured and free of errors, making the development process more robust and efficient.
+Sb Migrate is a command-line tool that extends [Storyblok's CLI](https://github.com/storyblok/storyblok-cli) with enhanced, type-safe migration capabilities. It provides a comprehensive solution for managing not only content but also schema changes in your Storyblok space, featuring built-in TypeScript support for type-safe migrations. With Sb Migrate, you can confidently create, test, and deploy changes to your content model, supported by a system that ensures your migrations are properly structured and can be rolled back when needed.
 
 ## Features
 
@@ -15,6 +15,7 @@ Sb Migrate extends the core functionality of [Storyblok's CLI](https://github.co
 - Automatically create timestamped rollback migrations when running migrations that update existing schema or content
 - Run Schema Migrations
 - Run Content Migrations
+- Full TypeScript support for migrations
 
 ## Built with
 
@@ -42,6 +43,7 @@ Sb Migrate extends the core functionality of [Storyblok's CLI](https://github.co
   - `npm install -g storyblok` or
   - `yarn global add storyblok` or
   - `pnpm add -g storyblok`
+- A Storyblok account with a space [Storyblok Signup](https://app.storyblok.com/signup)
 
 ### Install
 
@@ -131,9 +133,9 @@ sb-migrate login
 
 ## Migrations
 
-In this section you can see how to create migrations for schema and content migrations.
+In this section you can see how to create migrations for schema and content migrations. All migrations are stored in the `migrations` folder. When using the `generate-migration` command, the migration will be created automatically in the `migrations` folder.
 
-> When creating migrations, the file must have a `.js` or `.ts` extension to be executed by `sb-migrate`. Thanks to `JSDoc` documentation for all important functions, you'll still benefit from autocompletion and type safety in your IDE when using `.js` files but we recommend using TypeScript `.ts` to get full type safety and autocompletion.
+> When creating migrations, the file must have a `.js` or `.ts` extension to be executed by `sb-migrate`. We recommend using TypeScript `.ts` to get full type safety and autocompletion.
 
 ### Type-Safe Migrations
 

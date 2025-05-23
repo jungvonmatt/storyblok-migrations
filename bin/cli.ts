@@ -12,7 +12,9 @@ const program = new Command();
 
 program
   .name("sb-migrate")
-  .description("CLI tool for managing Storyblok schema and content migrations.")
+  .description(
+    "CLI tool for managing Storyblok schema and content migrations with TypeScript support.",
+  )
   .version("0.1.0");
 
 program

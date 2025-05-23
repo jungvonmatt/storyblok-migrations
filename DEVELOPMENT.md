@@ -2,6 +2,11 @@
 
 This section contains information about how to run, test and develop `sb-migrate` locally. If you want to contribute to the project, please read the [CONTRIBUTING.md](CONTRIBUTING.md) guidelines first.
 
+### Requirements
+
+- Node.js 20.x or higher (use `.nvmrc` for auto-installation)
+- Npm or [Pnpm](https://pnpm.io/installation) (recommended)
+
 ### Clone the repository
 
 ```bash
