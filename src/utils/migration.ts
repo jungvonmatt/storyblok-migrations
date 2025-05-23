@@ -54,14 +54,46 @@ export const isStoryWithUnpublishedChanges = (story: IStory): boolean => {
   return story.published === true && story.unpublished_changes === true;
 };
 
+/**
+ * @method MigrationFn
+ * @param  {Object} blok
+ * @return {void}
+ */
 export type MigrationFn = (blok: IStoryContent) => void;
 
+/**
+ * Executes a migration function on all stories containing a specific component.
+ *
+ * This function:
+ * 1. Retrieves all stories containing the specified component
+ * 2. Applies the migration function to each story's content
+ * 3. Updates stories with changes and handles publishing based on options
+ * 4. Creates rollback data for successful changes
+ * 5. Tracks and reports statistics on the migration execution
+ *
+ * @param {string} component - The component name to migrate
+ * @param {MigrationFn} migrationFn - Function that performs the actual content migration
+ * @param {RunMigrationOptions} [options] - Optional configuration for the migration
+ * @param {boolean} [options.isDryrun] - If true, only simulate changes without saving
+ * @param {string} [options.migrationPath] - Path to the migration file
+ * @param {string} [options.publishLanguages] - Languages to publish changes for
+ * @param {"all"|"published"|"published-with-changes"} [options.publish] - Publishing strategy
+ *
+ * @returns {Promise<{executed: boolean, motive?: string}>} Result of the migration execution
+ * @throws {Error} If migration function is missing or execution fails
+ *
+ * @example
+ * ```ts
+ * await runMigration('my-component', (content) => {
+ *   content.title = 'New Title';
+ * }, { publish: 'all' });
+ * ```
+ */
 export const runMigration = async (
   component: string,
   migrationFn: MigrationFn,
   options?: RunMigrationOptions,
 ): Promise<{ executed: boolean; motive?: string }> => {
-  // Dynamically import deepEqual
   const { deepEqual } = await import("fast-equals");
   const publish = options?.publish || "published";
   const publishLanguages = options?.publishLanguages || "ALL_LANGUAGES";

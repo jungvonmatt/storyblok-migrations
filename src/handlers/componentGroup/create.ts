@@ -3,6 +3,20 @@ import { api } from "../../utils/api";
 import { ComponentGroupMigration } from "../../types/migration";
 import { RunMigrationOptions } from "../../utils/migration";
 
+/**
+ * Handles the creation of component groups based on the provided migration schema.
+ * This function performs the following operations:
+ * 1. Checks if the operation is a dry run
+ * 2. Retrieves existing component groups
+ * 3. Creates new component groups that don't already exist
+ * 4. Logs the creation status for each group
+ *
+ * @param {Object} migration - The migration object containing the component groups to create
+ * @param {ComponentGroupMigration[]} migration.groups - Array of component group definitions
+ * @param {RunMigrationOptions} options - Configuration options for the migration
+ * @param {boolean} [options.isDryrun] - Whether to perform a dry run without making actual changes
+ * @throws {Error} If the component group creation fails
+ */
 export const handleCreateComponentGroup = async (
   migration: { groups: ComponentGroupMigration[] },
   options: RunMigrationOptions,

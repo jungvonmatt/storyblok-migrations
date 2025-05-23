@@ -10,6 +10,28 @@ interface GenerateMigrationOptions {
   name?: string;
 }
 
+/**
+ * Generates a new migration file based on the specified type and name.
+ * This function creates a migration file in the appropriate category directory (schema, content, or datasource)
+ * using templates specific to the migration type.
+ *
+ * The function can be used in two ways:
+ * 1. With options object containing type and name
+ * 2. Interactively through CLI prompts
+ *
+ * @param {Object} options - Configuration options for the migration
+ * @param {string} [options.type] - The type of migration to create. If not provided, will prompt interactively.
+ *                                  Valid types include: create-component-group, update-component-group,
+ *                                  delete-component-group, create-component, update-component,
+ *                                  delete-component, create-story, update-story, delete-story,
+ *                                  transform-entries, create-datasource, update-datasource,
+ *                                  delete-datasource
+ * @param {string} [options.name] - The name for the migration. If not provided, will prompt interactively.
+ *                                 Must contain only letters, numbers, hyphens, and underscores
+ *
+ * @throws {Error} If the specified migration type is invalid
+ * @throws {Error} If the template file for the migration type cannot be found
+ */
 export async function generateMigration(
   options: GenerateMigrationOptions = {},
 ) {

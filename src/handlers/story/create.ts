@@ -3,6 +3,21 @@ import { api, CreateStoryPayload } from "../../utils/api";
 import { RunMigrationOptions } from "../../utils/migration";
 import { StoryMigration } from "../../types/migration";
 
+/**
+ * Handles the creation of a new story based on the provided migration schema.
+ * This function performs the following operations:
+ * 1. Checks if the operation is a dry run
+ * 2. Generates a slug for the story
+ * 3. Verifies the story doesn't already exist
+ * 4. Creates the story with the specified content and options
+ * 5. Logs the creation status
+ *
+ * @param {Object} migration - The migration object containing the story schema
+ * @param {StoryMigration} migration.story - The schema defining the story properties
+ * @param {RunMigrationOptions} options - Configuration options for the migration
+ * @param {boolean} [options.isDryrun] - Whether to perform a dry run without making actual changes
+ * @throws {Error} If the story creation fails
+ */
 export const handleCreateStory = async (
   migration: { story: StoryMigration },
   options: RunMigrationOptions,

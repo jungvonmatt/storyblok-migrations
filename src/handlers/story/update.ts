@@ -5,6 +5,24 @@ import { StoryMigration } from "../../types/migration";
 import { cloneDeep } from "lodash";
 import { createRollbackFile } from "../../utils/storyblok";
 
+/**
+ * Handles the update of an existing story based on the provided migration schema.
+ * This function performs the following operations:
+ * 1. Checks if the operation is a dry run
+ * 2. Retrieves the story using either numeric ID or slug
+ * 3. Stores original story data for rollback
+ * 4. Applies updates to story properties and content
+ * 5. Updates the story with optional publishing options
+ * 6. Creates a rollback file for the changes
+ * 7. Logs the update status
+ *
+ * @param {Object} migration - The migration object containing the story updates
+ * @param {number | string} migration.id - The ID or slug of the story to update
+ * @param {Partial<StoryMigration>} migration.story - The schema defining the story updates
+ * @param {RunMigrationOptions} options - Configuration options for the migration
+ * @param {boolean} [options.isDryrun] - Whether to perform a dry run without making actual changes
+ * @throws {Error} If the story update fails or if the story is not found
+ */
 export const handleUpdateStory = async (
   migration: { id: number | string; story: Partial<StoryMigration> },
   options: RunMigrationOptions,

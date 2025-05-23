@@ -6,6 +6,25 @@ import { RunMigrationOptions } from "../../utils/migration";
 import { cloneDeep } from "lodash";
 import { addOrUpdateDatasource } from "../../utils/storyblok";
 import { createRollbackFile } from "../../utils/storyblok";
+
+/**
+ * Handles the update of an existing datasource based on the provided migration schema.
+ * This function performs the following operations:
+ * 1. Checks if the operation is a dry run
+ * 2. Verifies that either datasource updates or entries are provided
+ * 3. Retrieves the existing datasource
+ * 4. Updates datasource properties if provided
+ * 5. Updates datasource entries if provided
+ * 6. Creates a rollback file for the changes
+ *
+ * @param {Object} migration - The migration object containing the datasource updates
+ * @param {number | string} migration.id - The ID of the datasource to update
+ * @param {Partial<DatasourceMigration>} [migration.datasource] - Optional updates to the datasource properties
+ * @param {Omit<IPendingDataSourceEntry, "datasource_id">[]} [migration.entries] - Optional entries to update in the datasource
+ * @param {RunMigrationOptions} options - Configuration options for the migration
+ * @param {boolean} [options.isDryrun] - Whether to perform a dry run without making actual changes
+ * @throws {Error} If the datasource update fails
+ */
 export const handleUpdateDatasource = async (
   migration: {
     id: number | string;

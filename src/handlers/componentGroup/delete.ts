@@ -2,6 +2,20 @@ import { api } from "../../utils/api";
 import { RunMigrationOptions } from "../../utils/migration";
 import pc from "picocolors";
 
+/**
+ * Handles the deletion of a component group based on the provided migration schema.
+ * This function performs the following operations:
+ * 1. Checks if the operation is a dry run
+ * 2. Retrieves existing component groups
+ * 3. Deletes the specified component group
+ * 4. Logs the deletion status
+ *
+ * @param {Object} migration - The migration object containing the component group ID
+ * @param {number | string} migration.id - The ID of the component group to delete
+ * @param {RunMigrationOptions} options - Configuration options for the migration
+ * @param {boolean} [options.isDryrun] - Whether to perform a dry run without making actual changes
+ * @throws {Error} If the component group deletion fails
+ */
 export const handleDeleteComponentGroup = async (
   migration: { id: number | string },
   options: RunMigrationOptions,

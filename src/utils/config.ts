@@ -6,6 +6,11 @@ import { StoryblokConfig, StoryblokRegion } from "../types/config";
 import { confirm, input, select } from "@inquirer/prompts";
 import pc from "picocolors";
 
+/**
+ * Loads environment variables from the .env file.
+ *
+ * @returns {Promise<Partial<StoryblokConfig>>} A promise that resolves to the loaded configuration
+ */
 export async function loadEnvConfig(): Promise<Partial<StoryblokConfig>> {
   config(); // Load .env file
 
@@ -16,6 +21,12 @@ export async function loadEnvConfig(): Promise<Partial<StoryblokConfig>> {
   };
 }
 
+/**
+ * Saves the configuration to a file.
+ *
+ * @param {StoryblokConfig} config - The configuration to save
+ * @returns {Promise<void>} A promise that resolves when the configuration is saved
+ */
 export async function saveConfig(config: StoryblokConfig): Promise<void> {
   await writeFile(
     path.join(process.cwd(), ".storyblokrc.json"),
@@ -23,7 +34,11 @@ export async function saveConfig(config: StoryblokConfig): Promise<void> {
   );
 }
 
-// Search for a storyblok config in the current working directory
+/**
+ * Loads the configuration from the .storyblokrc.json file.
+ *
+ * @returns {Promise<StoryblokConfig | null>} A promise that resolves to the loaded configuration or null if not found
+ */
 export async function loadConfig(): Promise<StoryblokConfig | null> {
   const explorer = cosmiconfig("storyblok");
 

@@ -27,6 +27,21 @@ import {
 // Initialize jiti with the current working directory
 const jiti = createJiti(process.cwd());
 
+/**
+ * Runs a migration file based on the provided file path and options.
+ * This function performs the following operations:
+ * 1. Applies rate limiting to the API requests
+ * 2. If no file path is provided, prompts the user to select a migration
+ * 3. Resolves and loads the migration file
+ * 4. Executes the migration based on the migration type
+ *
+ * @param {string} [filePath] - The path to the migration file to run. If not provided, will prompt interactively.
+ * @param {RunOptions} [options] - Configuration options for the migration run
+ * @param {number} [options.throttle] - The throttle time in milliseconds between API requests (default: 300ms)
+ * @param {boolean} [options.dryRun] - Whether to perform a dry run of the migration (default: false)
+ * @param {boolean} [options.publish] - Whether to publish the migration (default: false)
+ * @param {string[]} [options.languages] - The languages to publish the migration to (default: all languages)
+ */
 export async function run(filePath?: string, options: RunOptions = {}) {
   // Apply rate limiting if provided
   if (options.throttle && options.throttle > 0) {

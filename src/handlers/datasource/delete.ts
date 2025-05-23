@@ -2,6 +2,20 @@ import pc from "picocolors";
 import { api } from "../../utils/api";
 import { RunMigrationOptions } from "../../utils/migration";
 
+/**
+ * Handles the deletion of a datasource based on the provided migration schema.
+ * This function performs the following operations:
+ * 1. Checks if the operation is a dry run
+ * 2. Verifies the datasource exists
+ * 3. Deletes the datasource from the API
+ * 4. Logs the deletion status
+ *
+ * @param {Object} migration - The migration object containing the datasource ID
+ * @param {number | string} migration.id - The ID of the datasource to delete
+ * @param {RunMigrationOptions} options - Configuration options for the migration
+ * @param {boolean} [options.isDryrun] - Whether to perform a dry run without making actual changes
+ * @throws {Error} If the datasource deletion fails
+ */
 export const handleDeleteDatasource = async (
   migration: { id: number | string },
   options: RunMigrationOptions,

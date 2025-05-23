@@ -15,7 +15,12 @@ import {
   IPendingComponentGroup,
 } from "../types/IComponentGroup";
 
-// Helper function to create a request queue with rate limiting
+/**
+ * Creates a request queue with rate limiting to prevent API rate limiting.
+ *
+ * @param {number} [initialRequestsPerSecond=3] - The initial number of requests per second
+ * @returns {Object} An object with methods to add requests to the queue and set the rate limit
+ */
 const createRequestQueue = (initialRequestsPerSecond = 3) => {
   const queue: Array<() => Promise<any>> = [];
   let processing = false;

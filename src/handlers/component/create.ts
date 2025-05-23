@@ -3,6 +3,23 @@ import { api } from "../../utils/api";
 import { ComponentMigration } from "../../types/migration";
 import { Component, RunMigrationOptions } from "../../utils/migration";
 
+/**
+ * Handles the creation of a new component based on the provided migration schema.
+ * This function performs the following operations:
+ * 1. Checks if the component already exists
+ * 2. Creates a new component instance
+ * 3. Sets additional properties like display name, root status, and nestable status
+ * 4. Associates the component with a component group if specified
+ * 5. Adds schema fields and tabs if provided
+ * 6. Saves the component to the API
+ *
+ * @param {Object} migration - The migration object containing the component schema
+ * @param {ComponentMigration} migration.schema - The schema defining the component properties
+ * @param {RunMigrationOptions} options - Configuration options for the migration
+ * @param {boolean} [options.isDryrun] - Whether to perform a dry run without making actual changes
+ *
+ * @throws {Error} If the component creation fails
+ */
 export const handleCreateComponent = async (
   migration: { schema: ComponentMigration },
   options: RunMigrationOptions,

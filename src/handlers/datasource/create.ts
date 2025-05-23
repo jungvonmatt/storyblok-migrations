@@ -5,6 +5,21 @@ import { DatasourceMigration } from "../../types/migration";
 import { api } from "../../utils/api";
 import { IPendingDataSourceEntry } from "../../types/IDataSource";
 
+/**
+ * Handles the creation of a new datasource based on the provided migration schema.
+ * This function performs the following operations:
+ * 1. Checks if the datasource already exists
+ * 2. Creates a new datasource instance
+ * 3. Adds entries to the datasource
+ * 4. Logs the creation status
+ *
+ * @param {Object} migration - The migration object containing the datasource schema and entries
+ * @param {DatasourceMigration} migration.datasource - The schema defining the datasource properties
+ * @param {Omit<IPendingDataSourceEntry, "datasource_id">[]} [migration.entries] - Optional entries to add to the datasource
+ * @param {RunMigrationOptions} options - Configuration options for the migration
+ * @param {boolean} [options.isDryrun] - Whether to perform a dry run without making actual changes
+ * @throws {Error} If the datasource creation fails
+ */
 export const handleCreateDatasource = async (
   migration: {
     datasource: DatasourceMigration;

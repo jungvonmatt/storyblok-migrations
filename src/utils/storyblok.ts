@@ -20,6 +20,12 @@ import { isArray, isPlainObject, has } from "lodash";
 
 let i18nComponentsFields: Record<string, string[]>;
 
+/**
+ * Retrieves all translatable fields for all components.
+ * This function caches the results in memory to avoid repeated API calls.
+ *
+ * @returns {Promise<Record<string, string[]>>} A record mapping component names to arrays of their translatable field names
+ */
 const getAllTranslatableComponentFields = async (): Promise<
   Record<string, string[]>
 > => {
@@ -45,6 +51,13 @@ const getAllTranslatableComponentFields = async (): Promise<
   return i18nComponentsFields;
 };
 
+/**
+ * Retrieves the translatable fields for a specific component.
+ * This function uses the cached results from getAllTranslatableComponentFields.
+ *
+ * @param {string} component - The name of the component to get translatable fields for
+ * @returns {Promise<string[]>} An array of translatable field names for the component
+ */
 export const getTranslatableComponentFields = async (
   component: string,
 ): Promise<string[]> => {
